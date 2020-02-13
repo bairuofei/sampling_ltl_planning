@@ -1,0 +1,51 @@
+never { /* (<> p1) && (<> p2) && (<> p3) */
+T0_init:
+	if
+	:: (1) -> goto T0_init
+	:: (p3) -> goto T0_S2
+	:: (p2) -> goto T0_S3
+	:: (p2 && p3) -> goto T0_S4
+	:: (p1) -> goto T1_S5
+	:: (p1 && p3) -> goto T1_S6
+	:: (p1 && p2) -> goto T2_S7
+	:: (p1 && p2 && p3) -> goto accept_all
+	fi;
+T0_S2:
+	if
+	:: (1) -> goto T0_S2
+	:: (p2) -> goto T0_S4
+	:: (p1) -> goto T1_S6
+	:: (p1 && p2) -> goto accept_all
+	fi;
+T0_S3:
+	if
+	:: (1) -> goto T0_S3
+	:: (p3) -> goto T0_S4
+	:: (p1) -> goto T2_S7
+	:: (p1 && p3) -> goto accept_all
+	fi;
+T0_S4:
+	if
+	:: (1) -> goto T0_S4
+	:: (p1) -> goto accept_all
+	fi;
+T1_S5:
+	if
+	:: (1) -> goto T1_S5
+	:: (p3) -> goto T1_S6
+	:: (p2) -> goto T2_S7
+	:: (p2 && p3) -> goto accept_all
+	fi;
+T1_S6:
+	if
+	:: (1) -> goto T1_S6
+	:: (p2) -> goto accept_all
+	fi;
+T2_S7:
+	if
+	:: (1) -> goto T2_S7
+	:: (p3) -> goto accept_all
+	fi;
+accept_all:
+	skip
+}
