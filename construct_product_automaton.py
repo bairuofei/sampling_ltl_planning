@@ -16,8 +16,7 @@ def product_automaton(trans_graph,buchi_graph):
     for trans_node in trans_node_set:
         for buchi_node in buchi_node_set:
             product_graph.add_node(product_add_node_index,name=trans_node+','+buchi_node,\
-                    ts_name=trans_node,buchi_name=buchi_node,init=False,accept=False)
-            
+                    ts_name=trans_node,buchi_name=buchi_node,init=False,accept=False)            
             if buchi_node.find('init')!=-1:  # 起始节点
                 init_node_list.append(product_add_node_index)
                 product_graph.nodes[product_add_node_index]['init']=True
@@ -37,7 +36,7 @@ def product_automaton(trans_graph,buchi_graph):
                 buchi_label=buchi_graph[product_graph.nodes[i]['buchi_name']]\
                         [product_graph.nodes[j]['buchi_name']]['label']
                 # 下一个TS节点的AP list集合
-                ts_node_label=trans_graph.node[product_graph.nodes[j]['ts_name']]['label']
+                ts_node_label=trans_graph.node[product_graph.nodes[i]['ts_name']]['label']
                 if buchi_label_test(buchi_label,ts_node_label)==1:  #如果返回1，则表明转移条件成立
                     product_graph.add_edge(i,j,weight=trans_graph[product_graph.nodes[i]['ts_name']]\
                                            [product_graph.nodes[j]['ts_name']]['weight'],\
@@ -54,7 +53,7 @@ def product_automaton(trans_graph,buchi_graph):
                     buchi_label=buchi_graph[product_graph.nodes[j]['buchi_name']]\
                             [product_graph.nodes[i]['buchi_name']]['label']
                     # 下一个TS节点的AP list集合
-                    ts_node_label=trans_graph.node[product_graph.nodes[i]['ts_name']]['label']
+                    ts_node_label=trans_graph.node[product_graph.nodes[j]['ts_name']]['label']
                     if buchi_label_test(buchi_label,ts_node_label)==1:  #如果返回1，则表明转移条件成立
                         product_graph.add_edge(j,i,weight=trans_graph[product_graph.nodes[j]['ts_name']]\
                                                [product_graph.nodes[i]['ts_name']]['weight'],\
