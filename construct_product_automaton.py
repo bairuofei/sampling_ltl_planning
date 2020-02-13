@@ -2,26 +2,28 @@
 
 import re
 import time
+import networkx as nx
 
 
-def product_automaton(trans_graph,buchi_graph,product_graph):
+def product_automaton(trans_graph,buchi_graph):
+    product_graph=nx.DiGraph()
     init_node_list=[]  # 记录乘积自动机中初始状态的编号集合
     accept_node_list=[]  # 记录乘积自动机中接受状态的编号集合
-    other_node_list=[]  # 其它状态的编号集合
     # 构建状态
     trans_node_set=trans_graph.nodes()
     buchi_node_set=buchi_graph.nodes()
     product_add_node_index=0
     for trans_node in trans_node_set:
         for buchi_node in buchi_node_set:
-            product_graph.add_node(product_add_node_index,name=trans_node+','+buchi_node,
-                                   ts_name=trans_node,buchi_name=buchi_node)
+            product_graph.add_node(product_add_node_index,name=trans_node+','+buchi_node,\
+                    ts_name=trans_node,buchi_name=buchi_node,init=False,accept=False)
+            
             if buchi_node.find('init')!=-1:  # 起始节点
                 init_node_list.append(product_add_node_index)
+                product_graph.nodes[product_add_node_index]['init']=True
             elif buchi_node.find('accept')!=-1:  #终止节点
-                accept_node_list.append(product_add_node_index)
-            else:
-                other_node_list.append(product_add_node_index)            
+                accept_node_list.append(product_add_node_index)    
+                product_graph.nodes[product_add_node_index]['accept']=True
             product_add_node_index=product_add_node_index+1
     # 构建乘积自动机的边
     product_state_num=len(product_graph) # get the number of nodes
@@ -62,7 +64,7 @@ def product_automaton(trans_graph,buchi_graph,product_graph):
 #                    print(buchi_label_test(buchi_label,ts_node_label))
 #                    print(" ")
 #                    time.sleep(8)
-    return init_node_list,accept_node_list,other_node_list
+    return product_graph,init_node_list,accept_node_list
                     
 
 def buchi_label_test(buchi_label,ts_node_label):

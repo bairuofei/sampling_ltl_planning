@@ -45,13 +45,12 @@ trans_graph.add_edge('n4','n4',weight=1)
 
 
 ## 构建乘积自动机
-product_graph=nx.DiGraph()
 init_node_list=[]  # 记录乘积自动机中初始状态的编号集合
 accept_node_list=[]  # 记录乘积自动机中接受状态的编号集合
 other_node_list=[]  # 其它状态的编号集合
 # 构建乘积自动机并返回三种类型节点集合
-[init_node_list,accept_node_list,other_node_list]=\
-    product_automaton(trans_graph,buchi_graph,product_graph);
+[product_graph,init_node_list,accept_node_list]=\
+    product_automaton(trans_graph,buchi_graph);
       
 # 绘制乘积自动机
 plt.figure()
