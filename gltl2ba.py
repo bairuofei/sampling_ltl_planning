@@ -25,8 +25,8 @@ class Graph:
     def edge(self, src, dst, label):
         self.dot.edge(src, dst, label)
 
-    def show(self):
-        self.dot.render(view=True)
+    def show(self,graph_name):
+        self.dot.render(graph_name,view=True)
 
     def save_render(self, path, on_screen):
         self.dot.render(path, view=on_screen)
@@ -181,7 +181,7 @@ def gltl2ba(ltl,LTL_FILE_POS,show_graph):
 
         graph = Ltl2baParser.parse(match.group(1))
         if show_graph:
-            graph.show()
+            graph.show('buchi_graph')
 #       print(graph)
     else:
         eprint("{}: ltl2ba error:".format(__main__.__file__))
