@@ -1,74 +1,24 @@
-never { /* (<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2))) && ((NOT p3) U p2) */
+never { /* (<> p1) && ([](<> p2)) && ([](<> p3)) */
 T0_init:
 	if
-	:: (!p3) -> goto T0_init
-	:: (p2 && !p3) -> goto T0_S6
-	:: (p2) -> goto T0_S7
-	:: (p2 && p3) -> goto T0_S8
-	:: (p1 && !p3) -> goto T1_S9
-	:: (p1 && p2 && !p3) -> goto T2_S14
-	:: (p1 && p2) -> goto T2_S15
-	:: (p1 && p2 && p3) -> goto accept_S16
+	:: (1) -> goto T0_init
+	:: (p1) -> goto T1_S8
 	fi;
-T0_S6:
+T1_S8:
 	if
-	:: (!p3) -> goto T0_S6
-	:: (1) -> goto T0_S7
-	:: (p3) -> goto T0_S8
-	:: (p1 && !p3) -> goto T2_S14
-	:: (p1) -> goto T2_S15
-	:: (p1 && p3) -> goto accept_S16
+	:: (1) -> goto T1_S8
+	:: (p2) -> goto T2_S8
+	:: (p2 && p3) -> goto accept_S8
 	fi;
-T0_S7:
+T2_S8:
 	if
-	:: (!p2 && !p3) -> goto T0_S6
-	:: (!p2) -> goto T0_S7
-	:: (!p2 && p3) -> goto T0_S8
-	:: (p1 && !p2 && !p3) -> goto T2_S14
-	:: (p1 && !p2) -> goto T2_S15
-	:: (p1 && !p2 && p3) -> goto accept_S16
+	:: (1) -> goto T2_S8
+	:: (p3) -> goto accept_S8
 	fi;
-T0_S8:
+accept_S8:
 	if
-	:: (!p2 && !p3) -> goto T0_S22
-	:: (!p2) -> goto T0_S8
-	:: (p1 && !p2 && !p3) -> goto accept_S17
-	:: (p1 && !p2) -> goto accept_S16
-	fi;
-T0_S22:
-	if
-	:: (!p3) -> goto T0_S22
-	:: (1) -> goto T0_S8
-	:: (p1 && !p3) -> goto accept_S17
-	:: (p1) -> goto accept_S16
-	fi;
-accept_S17:
-	if
-	:: (!p3) -> goto accept_S17
-	:: (1) -> goto accept_S16
-	fi;
-T1_S9:
-	if
-	:: (!p3) -> goto T1_S9
-	:: (p2 && !p3) -> goto T2_S14
-	:: (p2) -> goto T2_S15
-	:: (p2 && p3) -> goto accept_S16
-	fi;
-T2_S14:
-	if
-	:: (!p3) -> goto T2_S14
-	:: (1) -> goto T2_S15
-	:: (p3) -> goto accept_S16
-	fi;
-T2_S15:
-	if
-	:: (!p2 && !p3) -> goto T2_S14
-	:: (!p2) -> goto T2_S15
-	:: (!p2 && p3) -> goto accept_S16
-	fi;
-accept_S16:
-	if
-	:: (!p2 && !p3) -> goto accept_S17
-	:: (!p2) -> goto accept_S16
+	:: (1) -> goto T1_S8
+	:: (p2) -> goto T2_S8
+	:: (p2 && p3) -> goto accept_S8
 	fi;
 }
