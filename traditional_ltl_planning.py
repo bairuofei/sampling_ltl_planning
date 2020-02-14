@@ -18,6 +18,9 @@ trans_graph.add_edge('n1','n3',weight=1)
 trans_graph.add_edge('n2','n1',weight=3)
 trans_graph.add_edge('n3','n2',weight=5)
 trans_graph.add_edge('n3','n1',weight=1)
+trans_graph.add_edge('n1','n1',weight=0)
+trans_graph.add_edge('n2','n2',weight=0)
+trans_graph.add_edge('n3','n3',weight=0)
 
 # task formula
 task="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2))) && ((NOT p3) U p2)"
