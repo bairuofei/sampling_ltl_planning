@@ -1,3 +1,12 @@
+# Problems
+当LTL表达式中包含巡回任务时，巡回任务的执行顺序会影响前缀路径的最优性，同时也会影响后缀路径的最优性。
+原因在于LTL中的巡回任务的出现顺序会强制规定为这些任务的执行顺序，即实际上在任务执行前就已经规定了任务的执行顺序。
+这个特点削弱了LTL进行自动规划的能力。
+
+# Ideas
+1. 基于采样的搜索方法在搜索后缀路径时又重新设置了根节点，搜索了一棵新的树。但是搜索前缀路径时所构建的树有可能用于后缀路径的搜索。
+2. 
+
 # networkx
 ## graph attributes
 Add node: `G.add_node(1, label=['5pm'])`
@@ -5,9 +14,14 @@ Add edge: `G.add_edge(present_state, pat3_str.group(), weight=4)`
 
 Get specific node: `G.nodes[nodename]`
 Get node attr: `G.nodes[nodename][attr_name]`
+Get specific attribute of all nodes: `color = nx.get_node_attributes(G, 'color')`
+> return dict type
 
 Get edge attr: `G[nodename1][nodename2][attr_name]
 > You can also use this line to incrementally adding atttributes.
+
+Get specific attribute of all edges: `mix = nx.get_edge_attributes(G, 'mix')`
+> return dict type
 
 Get reachable nodes of specific node: `graph[node_name]`
 
@@ -43,6 +57,12 @@ task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p1->X((NOT p3 && NOT p4)U(p2 && X((NOT p
 # others
 find()方法：查找子字符串，若找到返回从0开始的下标值，若找不到返回1
 
+## python entry
+基本数据类型的参数：值传递
+
+列表、元组、字典作为参数：指针传递
+> including networkx garph
+
 # Test Case
 
 ## Case1: 3 node transition system
@@ -69,4 +89,9 @@ trans_graph.add_edge('n1','n1',weight=0)
 trans_graph.add_edge('n2','n2',weight=0)
 trans_graph.add_edge('n3','n3',weight=0)
 ```
+## Case2: Two Robots
+task="(F p11) && (F p12) && (F p13) && (F p21) && (F p22) && (F p23) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
+task="(F p11) && (F p12) && (F p13) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
+task="(F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
 
+task="(F p23) && ((NOT p22) U p12)"

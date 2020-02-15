@@ -1,0 +1,38 @@
+never { /* (<> p23) && ((NOT p22) U p12) && ([](p23 -> p11)) && ((NOT p23) U p13) */
+T0_init:
+	if
+	:: (!p23 && !p22) -> goto T0_init
+	:: (!p23 && !p22 && p13) || (!p22 && p11 && p13) -> goto T0_S2
+	:: (!p23 && p12) -> goto T0_S3
+	:: (!p23 && p12 && p13) || (p12 && p11 && p13) -> goto T0_S4
+	:: (p23 && !p22 && p11 && p13) -> goto T1_S5
+	:: (p23 && p12 && p11 && p13) -> goto accept_S6
+	fi;
+T0_S2:
+	if
+	:: (!p23 && !p22) || (!p22 && p11) -> goto T0_S2
+	:: (!p23 && p12) || (p12 && p11) -> goto T0_S4
+	:: (p23 && !p22 && p11) -> goto T1_S5
+	:: (p23 && p12 && p11) -> goto accept_S6
+	fi;
+T0_S3:
+	if
+	:: (!p23) -> goto T0_S3
+	:: (!p23 && p13) || (p11 && p13) -> goto T0_S4
+	:: (p23 && p11 && p13) -> goto accept_S6
+	fi;
+T0_S4:
+	if
+	:: (!p23) || (p11) -> goto T0_S4
+	:: (p23 && p11) -> goto accept_S6
+	fi;
+T1_S5:
+	if
+	:: (!p23 && !p22) || (!p22 && p11) -> goto T1_S5
+	:: (!p23 && p12) || (p12 && p11) -> goto accept_S6
+	fi;
+accept_S6:
+	if
+	:: (!p23) || (p11) -> goto accept_S6
+	fi;
+}
