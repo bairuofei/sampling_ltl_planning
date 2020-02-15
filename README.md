@@ -52,11 +52,13 @@ nx.draw(G,pos = nx.random_layout(G)，node_color = 'b',edge_color = 'r',\
 (<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 -> X (NOT p3)))   # right
 ```
 构建buchi自动机
+```bash
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X p3)
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X(NOT p4))
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X((NOT p4) && p3))
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p1 -> X(p2 && X(p3 && X(p4)))) 
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p1->X((NOT p3 && NOT p4)U(p2 && X((NOT p4 && NOT p1)U (p3 && X((NOT p1 && NOT p2)U p4))))))
+```
 
 # others
 find()方法：查找子字符串，若找到返回从0开始的下标值，若找不到返回1
