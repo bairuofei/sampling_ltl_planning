@@ -1,21 +1,24 @@
-never { /* (<> p2) && (<> p3) */
+never { /* (<> p1) && ([](<> p2)) && ([](<> p3)) */
 T0_init:
 	if
 	:: (1) -> goto T0_init
-	:: (p3) -> goto T0_S2
-	:: (p2) -> goto T1_S3
-	:: (p2 && p3) -> goto accept_all
+	:: (p1) -> goto T1_S8
 	fi;
-T0_S2:
+T1_S8:
 	if
-	:: (1) -> goto T0_S2
-	:: (p2) -> goto accept_all
+	:: (1) -> goto T1_S8
+	:: (p2) -> goto T2_S8
+	:: (p2 && p3) -> goto accept_S8
 	fi;
-T1_S3:
+T2_S8:
 	if
-	:: (1) -> goto T1_S3
-	:: (p3) -> goto accept_all
+	:: (1) -> goto T2_S8
+	:: (p3) -> goto accept_S8
 	fi;
-accept_all:
-	skip
+accept_S8:
+	if
+	:: (1) -> goto T1_S8
+	:: (p2) -> goto T2_S8
+	:: (p2 && p3) -> goto accept_S8
+	fi;
 }

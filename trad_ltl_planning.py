@@ -11,8 +11,8 @@ import trans_sys
 
 trans_graph=trans_sys.trad_trans_graph()
 # task formula
-task="(<> p2) && (<> p3)"
-surveillance_task=False
+task="(<> p1) && ([](<> p2)) && ([](<> p3))"
+surveillance_task=True
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/trad_ltlFile.txt'
 

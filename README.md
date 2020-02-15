@@ -44,9 +44,13 @@ nx.draw(G,pos = nx.random_layout(G)，node_color = 'b',edge_color = 'r',\
 
 # LTL Formula
 
-注意：不能直接用next,而要用-> X， 否则会报错
-对比项： (<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 X (NOT p3)))  出错
-          (<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 -> X (NOT p3)))正确
+> 注意：不能直接用next,而要用`-> X`， 否则会报错
+
+对比项：
+```bash
+(<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 X (NOT p3)))      # wrong
+(<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 -> X (NOT p3)))   # right
+```
 构建buchi自动机
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X p3)
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X(NOT p4))
@@ -65,10 +69,11 @@ find()方法：查找子字符串，若找到返回从0开始的下标值，若�
 
 # Test Case
 
-## Case1: 3 node transition system
+## Case1: 3 node transition system, no surveillance
 ```py
 # task ltl formula
 task1="(<> p1) && (<> p2) && (<> p3)"
+surveillance_task=False
 # task2="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2)))"
 # task3="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2))) && ((NOT p3) U p2)"
 
@@ -89,9 +94,20 @@ trans_graph.add_edge('n1','n1',weight=0)
 trans_graph.add_edge('n2','n2',weight=0)
 trans_graph.add_edge('n3','n3',weight=0)
 ```
-## Case2: Two Robots
+
+## Case2: 3 node transition system, no surveillance
+```py
+task="(<> p1) && ([](<> p2)) && ([](<> p3))"
+surveillance_task=True
+
+weight_list3=[3,5,1]
+```
+
+## Case3: Two Robots
 task="(F p11) && (F p12) && (F p13) && (F p21) && (F p22) && (F p23) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
+
 task="(F p11) && (F p12) && (F p13) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
+
 task="(F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
 
 task="(F p23) && ((NOT p22) U p12)"
