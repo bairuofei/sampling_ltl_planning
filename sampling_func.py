@@ -65,7 +65,7 @@ def pts_trans_cost(pts_now,pts_new,trans_graph):
     return cost
     
 
-def extend(search_tree,trans_graph,buchi_graph,p_new,accept_tree_nodes):
+def extend(search_tree,trans_graph,buchi_graph,p_new):
     """
     trans entry, search_tree will be changed
     """
@@ -87,9 +87,9 @@ def extend(search_tree,trans_graph,buchi_graph,p_new,accept_tree_nodes):
                         pre_p_new=i
                         pre_p_new_cost=pts_trans_cost_value     
 
-    if pre_p_new ==-1:
-        return
-    else:
+    if pre_p_new ==-1: # new node can not be added into the tree
+        return -1
+    else: # new node will be added into the tree
         # add the node into the tree
         tree_node_index=len(search_tree)
         parent_node_cost=search_tree.nodes[pre_p_new]['cost']
@@ -108,9 +108,8 @@ def extend(search_tree,trans_graph,buchi_graph,p_new,accept_tree_nodes):
         search_tree.add_edge(pre_p_new,tree_node_index,weight=pre_p_new_cost)
         # modify parent node's children attr
         search_tree.nodes[pre_p_new]['children'].append(tree_node_index)
-        
-        if p_new['buchi'].find('accept')!=-1:
-            accept_tree_nodes.append(tree_node_index)
+        return tree_node_index
+
         
         
 def update_subtree_cost(search_tree,subtree_root,delta_cost):
@@ -181,10 +180,47 @@ def node_in_tree_check(search_tree,p_new):
     return -1
     
     
-def construct_tree(trans_graph,buchi_graph,init_pts,buchi_init_state,itera_pre_num):
+def construct_tree_prefix(trans_graph,buchi_graph,init_pts,buchi_init_state,itera_pre_num):
     search_tree=search_tree_init(init_pts,trans_graph,buchi_init_state)
     accept_tree_nodes=[]
     for i in range(0,itera_pre_num):
+        pts_new=sample(search_tree,trans_graph) # list
+        buchi_state_list=list(buchi_graph.nodes)
+        for j in range(0,len(buchi_state_list)):
+            b_new=buchi_state_list[j]
+            p_new={'pts':pts_new,'buchi':b_new}
+            # check if new node already exists
+            node_tree_check_value=node_in_tree_check(search_tree,p_new)
+            if node_tree_check_value==-1:
+                new_node_index=extend(search_tree,trans_graph,buchi_graph,p_new)     
+                if new_node_index!=-1:
+                    if p_new['buchi'].find('accept')!=-1:
+                        accept_tree_nodes.append(new_node_index)
+            else:
+                rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value)
+    return search_tree,accept_tree_nodes
+    
+def find_path(search_tree,accept_tree_node,pre_path_list,pre_path_cost_list):
+    """
+    input: search tree, current accept state index, pre_path_cost_list
+    output: prefix path, list type, whose element type is also list.
+            pre_path_cost_list, store each path's cost
+    """
+    pre_path=[]
+    backtrack_node=search_tree.nodes[accept_tree_node]['parent']
+    pre_path_cost_list.append(search_tree.nodes[backtrack_node]['cost'])
+    while backtrack_node!=-1:
+        pre_path=[search_tree.nodes[backtrack_node]['ts_name']]+pre_path
+        backtrack_node=search_tree.nodes[backtrack_node]['parent']
+    if len(pre_path)!=0:
+        pre_path_list.append(pre_path)
+    return pre_path_list,pre_path_cost_list
+
+
+def construct_tree_suffix(trans_graph,buchi_graph,init_pts,buchi_init_state,itera_suf_num):
+    search_tree=search_tree_init(init_pts,trans_graph,buchi_init_state)
+    accept_tree_nodes=[]
+    for i in range(0,itera_suf_num):
         pts_new=sample(search_tree,trans_graph) # list
         buchi_state_list=list(buchi_graph.nodes)
         for j in range(0,len(buchi_state_list)):
@@ -197,6 +233,3 @@ def construct_tree(trans_graph,buchi_graph,init_pts,buchi_init_state,itera_pre_n
             else:
                 rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value)
     return search_tree,accept_tree_nodes
-    
-    
-
