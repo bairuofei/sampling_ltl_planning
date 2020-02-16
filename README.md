@@ -71,7 +71,94 @@ find()方法：查找子字符串，若找到返回从0开始的下标值，若�
 
 # Test Case
 
-## Case1: 3 node transition system, no surveillance
+## sam_Case4: Two Robots
+```py
+    # pay attention to modify the label
+    
+    trans_graph=nx.DiGraph()
+    trans_graph.add_node('n1',name='n1',label=['p11'])
+    trans_graph.add_node('n2',name='n2',label=['p12'])
+    trans_graph.add_node('n3',name='n3',label=['p13'])
+    trans_graph.add_node('n4',name='n4',label=['p14'])
+    trans_graph.add_edge('n1','n3',weight=3)
+    trans_graph.add_edge('n3','n2',weight=3)
+    trans_graph.add_edge('n3','n4',weight=3)
+    trans_graph.add_edge('n2','n4',weight=3)
+    
+    trans_graph.add_edge('n3','n1',weight=3)
+    trans_graph.add_edge('n2','n3',weight=3)
+    trans_graph.add_edge('n4','n3',weight=3)
+    trans_graph.add_edge('n4','n2',weight=3)
+    
+    trans_graph.add_edge('n1','n1',weight=0.1)
+    trans_graph.add_edge('n2','n2',weight=0.1)
+    trans_graph.add_edge('n3','n3',weight=0.1)
+    trans_graph.add_edge('n4','n4',weight=0.1) # we can set a very small number but not zero
+```
+```py
+task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14)))"
+
+task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14))) && ((NOT p22) U p24) &&  ([](p24 -> X(NOT p22)))"
+```
+
+## sam_Case3: Two Robots
+```py
+def samp_trans_graph1():
+    trans_graph=nx.DiGraph()
+    trans_graph.add_node('n1',name='n1',label=['p11'])
+    trans_graph.add_node('n2',name='n2',label=['p12'])
+    trans_graph.add_node('n3',name='n3',label=['p13'])
+    trans_graph.add_edge('n1','n2',weight=3)
+    trans_graph.add_edge('n2','n3',weight=3)
+    trans_graph.add_edge('n2','n1',weight=3)
+    trans_graph.add_edge('n3','n2',weight=3)
+    trans_graph.add_edge('n1','n1',weight=0.1)
+    trans_graph.add_edge('n2','n2',weight=0.1)
+    trans_graph.add_edge('n3','n3',weight=0.1) # we can set a very small number but not zero
+    for node in list(trans_graph.nodes):
+        trans_graph.nodes[node]['children']=list(trans_graph[node])
+    return trans_graph
+
+def samp_trans_graph2():
+    trans_graph=nx.DiGraph()
+    trans_graph.add_node('n1',name='n1',label=['p21'])
+    trans_graph.add_node('n2',name='n2',label=['p22'])
+    trans_graph.add_node('n3',name='n3',label=['p23'])
+    trans_graph.add_edge('n1','n2',weight=3)
+    trans_graph.add_edge('n2','n3',weight=3)
+    trans_graph.add_edge('n2','n1',weight=3)
+    trans_graph.add_edge('n3','n2',weight=3)
+    trans_graph.add_edge('n1','n1',weight=0.1)
+    trans_graph.add_edge('n2','n2',weight=0.1)
+    trans_graph.add_edge('n3','n3',weight=0.1) # we can set a very small number but not zero
+    for node in list(trans_graph.nodes):
+        trans_graph.nodes[node]['children']=list(trans_graph[node])
+    return trans_graph
+```
+
+```py
+# task1
+task="(<> p23) && ((NOT p22) U p12)"
+
+# task2
+task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11))"
+
+# task3
+task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11)) && ((NOT p23) U p13)"
+
+# task4 surveillance
+task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+```
+
+## tra_Case2: 3 node transition system, no surveillance
+```py
+task="(<> p1) && ([](<> p2)) && ([](<> p3))"
+surveillance_task=True
+
+weight_list3=[3,5,1]
+```
+
+## tra_Case1: 3 node transition system, no surveillance
 ```py
 # task ltl formula
 task1="(<> p1) && (<> p2) && (<> p3)"
@@ -97,28 +184,9 @@ trans_graph.add_edge('n2','n2',weight=0)
 trans_graph.add_edge('n3','n3',weight=0)
 ```
 
-## Case2: 3 node transition system, no surveillance
-```py
-task="(<> p1) && ([](<> p2)) && ([](<> p3))"
-surveillance_task=True
 
-weight_list3=[3,5,1]
-```
 
-## Case3: Two Robots
 
-```py
-# task1
-task="(<> p23) && ((NOT p22) U p12)"
-```
-```py
-# task2
-task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11))"
-```
-```py
-# task3
-task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11)) && ((NOT p23) U p13)"
-```
 task="(F p11) && (F p12) && (F p13) && (F p21) && (F p22) && (F p23) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
 
 task="(F p11) && (F p12) && (F p13) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"

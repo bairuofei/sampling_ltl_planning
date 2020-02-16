@@ -15,14 +15,14 @@ trans_graph.append(trans_sys.samp_trans_graph1())
 trans_graph.append(trans_sys.samp_trans_graph2())
 
 # task formula
-task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
-surveillance_task=True
+task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14))) && ((NOT p22) U p24) &&  ([](p24 -> X(NOT p22)))"
+surveillance_task=False
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/samp_ltlFile.txt'
 
 # initial_location
 init_pts=['n1','n1']
-itera_pre_num=100000
+itera_pre_num=10000
 itera_suf_num=10000
 
 # convert ltl to buchi automaton
