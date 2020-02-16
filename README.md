@@ -106,6 +106,19 @@ weight_list3=[3,5,1]
 ```
 
 ## Case3: Two Robots
+
+```py
+# task1
+task="(<> p23) && ((NOT p22) U p12)"
+```
+```py
+# task2
+task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11))"
+```
+```py
+# task3
+task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11)) && ((NOT p23) U p13)"
+```
 task="(F p11) && (F p12) && (F p13) && (F p21) && (F p22) && (F p23) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
 
 task="(F p11) && (F p12) && (F p13) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
