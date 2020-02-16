@@ -54,6 +54,7 @@ def pts_trans_check(pts_now,pts_new,trans_graph):
     
 def pts_trans_cost(pts_now,pts_new,trans_graph):
     """
+    input: two list, include robot state
     return cost
     """
     cost=0
@@ -125,6 +126,28 @@ def update_subtree_cost(search_tree,subtree_root,delta_cost):
         if len(search_tree.nodes[pop_node]['children'])>0:
             search_queue+=search_tree.nodes[pop_node]['children']
 
+
+def product_trans_check(trans_graph,buchi_graph,pre_node,suf_node):
+    """
+    check if there exists a transition between two product nodes
+    input node type: dict, two key:'pts','buchi'
+    output: exist, return 1
+            not exist, return -1
+    """
+    # buchi transition check
+    if suf_node['buchi'] in buchi_graph[pre_node['buchi']]:
+        # pts transition check
+        if pts_trans_check(pre_node['pts'],suf_node['pts'],trans_graph)==1:
+            buchi_label=buchi_graph[pre_node['buchi']][suf_node['buchi']]['label']
+            ts_node_label=[]
+            for i in range(0,len(pre_node['pts'])):
+                ts_node_label+=trans_graph[i].nodes[pre_node['pts'][i]]['label']
+                # product transition check
+                if buchi_label_test(buchi_label,ts_node_label)==1:
+                    return 1
+    return -1
+        
+    
     
         
 def rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value):
@@ -135,35 +158,28 @@ def rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value):
         if i==node_tree_check_value:
             continue
         else:
-            # buchi transition check
-            if search_tree.nodes[i]['buchi_name'] in buchi_graph[p_not_new['buchi']]:
-                # pts transiton check           
-                if pts_trans_check(p_not_new['pts'],search_tree.nodes[i]['ts_name'],trans_graph)==1:
-                    buchi_label=buchi_graph[p_not_new['buchi']][search_tree.nodes[i]['buchi_name']]['label']
-                    ts_node_label=[]
-                    for j in range(0,len(p_not_new['pts'])):
-                        ts_node_label+=trans_graph[j].nodes[p_not_new['pts'][j]]['label']
-                    # product transition check
-                    if buchi_label_test(buchi_label,ts_node_label)==1:
-                        pts_trans_cost_value=pts_trans_cost(p_not_new['pts'],\
-                                search_tree.nodes[i]['ts_name'],trans_graph)
-                        reachable_node_cost=search_tree.nodes[i]['cost']
-                        current_node_cost=search_tree.nodes[node_tree_check_value]['cost']
-                        rewire_cost=current_node_cost+pts_trans_cost_value
-                        if rewire_cost<reachable_node_cost:
-                            # rewiring
-                            reachable_node_parent=search_tree.nodes[i]['parent']
-                            search_tree.remove_edge(reachable_node_parent,i)
-                            search_tree.add_edge(node_tree_check_value,i,weight=rewire_cost)
-                            # parent modify
-                            search_tree.nodes[i]['parent']=node_tree_check_value
-                            # cost modify
-                            search_tree.nodes[i]['cost']=rewire_cost
-                            # children modify
-                            search_tree.nodes[node_tree_check_value]['children'].append(i)
-                            search_tree.nodes[reachable_node_parent]['children'].remove(i)
-                            delta_cost=reachable_node_cost-rewire_cost
-                            update_subtree_cost(search_tree,i,delta_cost)
+            suf_node={'pts':search_tree.nodes[i]['ts_name'],\
+                      'buchi':search_tree.nodes[i]['buchi_name']}
+            if product_trans_check(trans_graph,buchi_graph,p_not_new,suf_node)==1:
+                pts_trans_cost_value=pts_trans_cost(p_not_new['pts'],\
+                        search_tree.nodes[i]['ts_name'],trans_graph)
+                reachable_node_cost=search_tree.nodes[i]['cost']
+                current_node_cost=search_tree.nodes[node_tree_check_value]['cost']
+                rewire_cost=current_node_cost+pts_trans_cost_value
+                if rewire_cost<reachable_node_cost:
+                    # rewiring
+                    reachable_node_parent=search_tree.nodes[i]['parent']
+                    search_tree.remove_edge(reachable_node_parent,i)
+                    search_tree.add_edge(node_tree_check_value,i,weight=rewire_cost)
+                    # parent modify
+                    search_tree.nodes[i]['parent']=node_tree_check_value
+                    # cost modify
+                    search_tree.nodes[i]['cost']=rewire_cost
+                    # children modify
+                    search_tree.nodes[node_tree_check_value]['children'].append(i)
+                    search_tree.nodes[reachable_node_parent]['children'].remove(i)
+                    delta_cost=reachable_node_cost-rewire_cost
+                    update_subtree_cost(search_tree,i,delta_cost)
             
     
 def node_in_tree_check(search_tree,p_new):
@@ -200,7 +216,7 @@ def construct_tree_prefix(trans_graph,buchi_graph,init_pts,buchi_init_state,iter
                 rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value)
     return search_tree,accept_tree_nodes
     
-def find_path(search_tree,accept_tree_node,pre_path_list,pre_path_cost_list):
+def pre_find_path(search_tree,accept_tree_node,pre_path_list,pre_path_cost_list):
     """
     input: search tree, current accept state index, pre_path_cost_list
     output: prefix path, list type, whose element type is also list.
@@ -217,9 +233,28 @@ def find_path(search_tree,accept_tree_node,pre_path_list,pre_path_cost_list):
     return pre_path_list,pre_path_cost_list
 
 
-def construct_tree_suffix(trans_graph,buchi_graph,init_pts,buchi_init_state,itera_suf_num):
+def suf_find_path(search_tree,accept_tree_node,actual_accept_node_pts):
+    """
+    input: search tree, 
+           accept_tree_node: type int, node index
+           actual_accept_node_pts: type list       
+    output: suf_path: path list, whose element is also list
+    """
+    suf_path=[]
+    suf_path.append(search_tree.nodes[accept_tree_node]['ts_name'])
+    backtrack_node=search_tree.nodes[accept_tree_node]['parent']
+    while backtrack_node!=-1:
+        suf_path=[search_tree.nodes[backtrack_node]['ts_name']]+suf_path
+        backtrack_node=search_tree.nodes[backtrack_node]['parent']
+    suf_path.append(actual_accept_node_pts)
+    return suf_path
+
+
+
+def construct_tree_suffix(trans_graph,buchi_graph,init_pts,buchi_init_state,actual_accept_node,itera_suf_num):
     search_tree=search_tree_init(init_pts,trans_graph,buchi_init_state)
     accept_tree_nodes=[]
+    accept_tree_nodes_costs=[]
     for i in range(0,itera_suf_num):
         pts_new=sample(search_tree,trans_graph) # list
         buchi_state_list=list(buchi_graph.nodes)
@@ -229,7 +264,16 @@ def construct_tree_suffix(trans_graph,buchi_graph,init_pts,buchi_init_state,iter
             # check if new node already exists
             node_tree_check_value=node_in_tree_check(search_tree,p_new)
             if node_tree_check_value==-1:
-                extend(search_tree,trans_graph,buchi_graph,p_new,accept_tree_nodes)
+                new_node_index=extend(search_tree,trans_graph,buchi_graph,p_new)     
+                if new_node_index!=-1: # new node is added into the tree successfully
+                    pre_node={'pts':search_tree.nodes[new_node_index]['ts_name'],\
+                              'buchi':search_tree.nodes[new_node_index]['buchi_name']}
+                    # check if it is the accept state
+                    if product_trans_check(trans_graph,buchi_graph,pre_node,actual_accept_node)==1:
+                        accept_tree_nodes.append(new_node_index)
+                        accept_tree_nodes_costs.append(pts_trans_cost(pre_node['pts'],\
+                                        actual_accept_node['pts'],trans_graph))
             else:
                 rewire(search_tree,trans_graph,buchi_graph,node_tree_check_value)
-    return search_tree,accept_tree_nodes
+    return search_tree,accept_tree_nodes,accept_tree_nodes_costs
+
