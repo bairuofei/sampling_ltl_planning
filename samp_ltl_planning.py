@@ -15,15 +15,18 @@ trans_graph.append(trans_sys.samp_trans_graph1())
 trans_graph.append(trans_sys.samp_trans_graph2())
 
 # task formula
-task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14))) && ((NOT p22) U p24) &&  ([](p24 -> X(NOT p22)))"
-surveillance_task=False
+task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+# task="(<>p12) && ((NOT p12) U p14) && ([](p14 -> X(NOT p12)))"
+# task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
+# task="(<>p14) && (<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22))) && ((NOT p14) U p22)"
+surveillance_task=True
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/samp_ltlFile.txt'
 
 # initial_location
 init_pts=['n1','n1']
-itera_pre_num=10000
-itera_suf_num=10000
+itera_pre_num=8000
+itera_suf_num=8000
 
 # convert ltl to buchi automaton
 buchi_init_states=[]
@@ -103,10 +106,26 @@ for buchi_init_state in buchi_init_states:
         optimal_path_cost[1]=buchi_init_path_cost[1]
         optimal_path[0]=buchi_init_path[0]
         optimal_path[1]=buchi_init_path[1]
+ 
     
+# record path for every robot
+robot_path=[]
+robot_num=len(trans_graph)
+for i in range(0,robot_num):
+    robot_path.append([])
+for part_path in optimal_path:
+    for each_robot_pos in part_path:
+        for i in range(0,robot_num):
+            robot_path[i].append(each_robot_pos[i])
+    for i in range(0,robot_num):
+        robot_path[i].append('+')
     
-print(optimal_path)
-print(optimal_path_cost)
+print('optimal_path: '+str(optimal_path))
+print('optimal_path_cost: '+str(optimal_path_cost))
+for i in range(0,robot_num):        
+    print('Robot '+str(i)+': '+str(robot_path[i]))
+    
+
 #for i in range(0,len(pre_path_list)):
 #    print(pre_path_list[i])
 #    print('cost = '+str(pre_path_cost_list[i]))
@@ -114,12 +133,15 @@ print(optimal_path_cost)
 # print(search_tree.nodes[28]['name'])
 
 
-#search_dot_pre_tree=nx_to_graphviz_tree(pre_search_tree)
-#search_dot_pre_tree.show('search_tree')
+search_dot_pre_tree=nx_to_graphviz_tree(pre_search_tree)
+search_dot_pre_tree.show('search_tree')
 
 trans_dot_graph1=nx_to_graphviz_trans(trans_graph[0])
 trans_dot_graph1.show('trans_graph1')
 trans_dot_graph2=nx_to_graphviz_trans(trans_graph[1])
 trans_dot_graph2.show('trans_graph2')
+
+#for i in range(0,len(pre_search_tree)):
+#    print(pre_search_tree.nodes[i]['ts_label'])
 
 # print(search_tree.nodes[19]['name'])

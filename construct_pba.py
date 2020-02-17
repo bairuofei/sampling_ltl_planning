@@ -3,6 +3,8 @@
 import re
 import time
 import networkx as nx
+from sampling_func import pts_trans_check
+from sampling_func import pts_trans_cost
 
 
 def product_automaton(trans_graph,buchi_graph):
@@ -15,8 +17,14 @@ def product_automaton(trans_graph,buchi_graph):
     product_add_node_index=0
     for trans_node in trans_node_set:
         for buchi_node in buchi_node_set:
-            product_graph.add_node(product_add_node_index,name=trans_node+','+buchi_node,\
-                    ts_name=trans_node,buchi_name=buchi_node,init=False,accept=False,parent=[])            
+            # ts_name: type str
+            product_graph.add_node(product_add_node_index,\
+                                   name=str(trans_node)+','+buchi_node,\
+                                   ts_name=str(trans_node),\
+                                   buchi_name=buchi_node,\
+                                   init=False,\
+                                   accept=False,\
+                                   parent=[])      
             if buchi_node.find('init')!=-1:  # 起始节点
                 init_node_list.append(product_add_node_index)
                 product_graph.nodes[product_add_node_index]['init']=True
@@ -100,5 +108,71 @@ def buchi_label_test(buchi_label,ts_node_label):
             break; 
     return buchi_label_test
 
+
+def product_transition(trans_graph_list):
+    """
+    input: trad_trans_graph list
+    output: one product transition graph
+    """
+    product_trans_graph=nx.DiGraph()    
+    ## construct product transiton state
+    robot_num=len(trans_graph_list)
+    # created nodes in every cycle
+    pts_nodes_list=[]
+    for i in range(0,robot_num):
+        pts_nodes_list.append([])
+    i=0
+    while i!=robot_num:
+        if i==0:
+            for single_ts_node in list(trans_graph_list[i].nodes):
+                # elements in pts_nodes_list[i] is aslo list
+                pts_nodes_list[i].append([single_ts_node])
+        else:
+            for pre_product_node in pts_nodes_list[i-1]:
+                for single_ts_node in list(trans_graph_list[i].nodes):
+                    add_node=[]
+                    add_node.append(single_ts_node)
+                    pts_nodes_list[i].append(pre_product_node+add_node)
+        i+=1
+    # pts_node_list[robot_num-1]: each element is list type
+    for pts_node in pts_nodes_list[robot_num-1]:
+        label_list=[]
+        for j in range(0,robot_num):
+            label_list+=trans_graph_list[j].nodes[pts_node[j]]['label']
+        product_trans_graph.add_node(str(pts_node),name=str(pts_node),label=label_list)
+    
+    ## construct product transition edge
+    node_num=len(product_trans_graph)
+    for k in range(0,node_num):
+        for m in range(k,node_num):
+            if pts_trans_check(pts_nodes_list[robot_num-1][k],\
+                        pts_nodes_list[robot_num-1][m],trans_graph_list)==1:
+                trans_cost=pts_trans_cost(pts_nodes_list[robot_num-1][k],\
+                        pts_nodes_list[robot_num-1][m],trans_graph_list)
+                product_trans_graph.add_edge(str(pts_nodes_list[robot_num-1][k]),\
+                        str(pts_nodes_list[robot_num-1][m]),weight=trans_cost)
+            if k!=m:
+                if pts_trans_check(pts_nodes_list[robot_num-1][m],\
+                        pts_nodes_list[robot_num-1][k],trans_graph_list)==1:
+                    trans_cost=pts_trans_cost(pts_nodes_list[robot_num-1][m],\
+                        pts_nodes_list[robot_num-1][k],trans_graph_list)
+                    product_trans_graph.add_edge(str(pts_nodes_list[robot_num-1][m]),\
+                        str(pts_nodes_list[robot_num-1][k]),weight=trans_cost)
+    return product_trans_graph
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
 
 

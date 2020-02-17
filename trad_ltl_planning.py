@@ -3,18 +3,29 @@ import os
 import networkx as nx
 from gltl2ba import ltl_formula_to_ba
 from construct_pba import product_automaton
+from construct_pba import product_transition
 # from construct_pba import buchi_label_test
 from show_graph import nx_to_graphviz_trans
 from show_graph import nx_to_graphviz_product
 import trans_sys
 
+## Transition system
+trans_graph_list=[]
+trans_graph_list.append(trans_sys.samp_trans_graph1())
+trans_graph_list.append(trans_sys.samp_trans_graph2())
+trans_graph=product_transition(trans_graph_list)
 
-trans_graph=trans_sys.trad_trans_graph()
-# task formula
-task="(<> p1) && ([](<> p2)) && ([](<> p3))"
-surveillance_task=True
+# LTL task formula
+SURVEILLANCE=False   # !!!!!!!!!! ATTENTION !!!!!!!!!
+task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/trad_ltlFile.txt'
+
+## Init position
+init_pos=['n1', 'n1']
+init_pos_organize=[]
+for pos in init_pos:
+    init_pos_organize.append(pos)
 
 # convert ltl to buchi automaton
 buchi_init_states=[]
@@ -37,7 +48,7 @@ product_dot_graph.show('product_graph')
 trans_dot_graph=nx_to_graphviz_trans(trans_graph)
 trans_dot_graph.show('trans_graph')
     
-init_pos='n1'
+
 
 # best path for specific init state
 single_init_best_path={'whole_path':[],'pre_path':[],'suf_path':[]}
@@ -47,7 +58,7 @@ best_path_length={'whole_path':float("inf"),'pre_path':float("inf"),'suf_path':f
 
 search_init_states=[]  # init state to search
 for product_init_state in product_init_states:
-    if product_graph.nodes[product_init_state]['ts_name']==init_pos:
+    if product_graph.nodes[product_init_state]['ts_name']==str(init_pos_organize):
         # if more than one init state in NBA, then so as the product init state
         search_init_states.append(product_init_state)
 for search_init_state in search_init_states:
@@ -69,7 +80,7 @@ for search_init_state in search_init_states:
                   str(product_accept_state)+' has no path!!')
             continue
         
-    if surveillance_task:
+    if SURVEILLANCE:
         suffix_path=[]
         suffix_path_length=float("inf")
         for product_accept_state in product_accept_states:

@@ -1,186 +1,24 @@
-never { /* (<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14))) && ((NOT p22) U p24) &&  ([](p24 -> X(NOT p22))) */
+never { /* ([]<> p23) && ([]<> p21) && ((NOT p23) U p13) */
 T0_init:
 	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_init
-	:: (!p14 && !p22 && !p24) -> goto T0_S4
-	:: (!p14 && !p22) -> goto T0_S5
-	:: (!p14 && !p22 && p24) -> goto T0_S6
-	:: (!p14 && !p22 && p12 && !p24) -> goto T0_S7
-	:: (!p14 && !p22 && p12) -> goto T0_S8
-	:: (!p14 && p12 && p24) -> goto T0_S9
-	:: (p22 && p12 && p24) -> goto T0_S10
-	:: (p14 && p22 && p12 && p24) -> goto accept_S11
-	fi;
-T0_S4:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_init
-	:: (!p14 && !p22 && !p24) -> goto T0_S4
-	:: (!p14 && !p22) -> goto T0_S5
-	:: (!p14 && !p22 && p24) -> goto T0_S6
-	:: (!p14 && !p22 && p12 && !p24) -> goto T0_S7
-	:: (!p14 && !p22 && p12) -> goto T0_S8
-	:: (!p14 && p12 && p24) -> goto T0_S9
-	:: (!p14 && p22 && p12 && p24) -> goto T0_S10
-	fi;
-T0_S5:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_init
-	:: (!p14 && !p22 && !p24) -> goto T0_S4
-	:: (!p14 && !p22) -> goto T0_S5
-	:: (!p14 && !p22 && p24) -> goto T0_S6
-	:: (!p14 && !p22 && p12 && !p24) -> goto T0_S7
-	:: (!p14 && !p22 && p12) -> goto T0_S8
-	:: (!p14 && !p22 && p12 && p24) -> goto T0_S9
-	fi;
-T0_S6:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S23
-	:: (!p14 && !p22 && !p24) -> goto T0_S24
-	:: (!p14 && !p22) -> goto T0_S6
-	:: (!p14 && !p22 && p12 && !p24) -> goto T0_S20
-	:: (!p14 && !p22 && p12) -> goto T0_S9
-	fi;
-T0_S23:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S23
-	:: (!p14 && !p22 && !p24) -> goto T0_S24
-	:: (!p14 && !p22) -> goto T0_S6
-	:: (!p14 && p12 && !p24) -> goto T0_S20
-	:: (!p14 && p12) -> goto T0_S9
-	:: (p22 && p12 && !p24) -> goto T0_S17
-	:: (p22 && p12) -> goto T0_S10
-	:: (p14 && p22 && p12 && !p24) -> goto accept_S14
-	:: (p14 && p22 && p12) -> goto accept_S11
-	fi;
-T0_S17:
-	if
-	:: (!p14 && !p12 && !p24) -> goto T0_S15
-	:: (!p14 && !p12) -> goto T0_S16
-	:: (!p14 && !p24) -> goto T0_S17
-	:: (!p14) -> goto T0_S10
-	fi;
-T0_S15:
-	if
-	:: (!p12 && !p24) -> goto T0_S15
-	:: (!p12) -> goto T0_S16
-	:: (!p24) -> goto T0_S17
-	:: (1) -> goto T0_S10
-	:: (p14 && !p12 && !p24) -> goto accept_S12
-	:: (p14 && !p12) -> goto accept_S13
-	:: (p14 && !p24) -> goto accept_S14
-	:: (p14) -> goto accept_S11
-	fi;
-accept_S12:
-	if
-	:: (!p12 && !p24) -> goto accept_S12
-	:: (!p12) -> goto accept_S13
-	:: (!p24) -> goto accept_S14
-	:: (1) -> goto accept_S11
-	fi;
-accept_S13:
-	if
-	:: (!p22 && !p12 && !p24) -> goto accept_S12
-	:: (!p22 && !p12) -> goto accept_S13
-	:: (!p22 && !p24) -> goto accept_S14
-	:: (!p22) -> goto accept_S11
-	fi;
-T0_S16:
-	if
-	:: (!p22 && !p12 && !p24) -> goto T0_S15
-	:: (!p22 && !p12) -> goto T0_S16
-	:: (!p22 && !p24) -> goto T0_S17
-	:: (!p22) -> goto T0_S10
-	:: (p14 && !p22 && !p12 && !p24) -> goto accept_S12
-	:: (p14 && !p22 && !p12) -> goto accept_S13
-	:: (p14 && !p22 && !p24) -> goto accept_S14
-	:: (p14 && !p22) -> goto accept_S11
-	fi;
-accept_S14:
-	if
-	:: (!p14 && !p12 && !p24) -> goto accept_S12
-	:: (!p14 && !p12) -> goto accept_S13
-	:: (!p14 && !p24) -> goto accept_S14
-	:: (!p14) -> goto accept_S11
-	fi;
-T0_S24:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S23
-	:: (!p14 && !p22 && !p24) -> goto T0_S24
-	:: (!p14 && !p22) -> goto T0_S6
-	:: (!p14 && p12 && !p24) -> goto T0_S20
-	:: (!p14 && p12) -> goto T0_S9
-	:: (!p14 && p22 && p12 && !p24) -> goto T0_S17
-	:: (!p14 && p22 && p12) -> goto T0_S10
-	fi;
-T0_S20:
-	if
-	:: (!p14 && !p12 && !p24) -> goto T0_S18
-	:: (!p14 && !p24) -> goto T0_S20
-	:: (!p14) -> goto T0_S9
-	:: (!p14 && p22 && !p12 && !p24) -> goto T0_S15
-	:: (!p14 && p22 && !p12) -> goto T0_S16
-	:: (!p14 && p22 && !p24) -> goto T0_S17
-	:: (!p14 && p22) -> goto T0_S10
-	fi;
-T0_S18:
-	if
-	:: (!p14 && !p12 && !p24) -> goto T0_S18
-	:: (!p14 && !p24) -> goto T0_S20
-	:: (!p14) -> goto T0_S9
-	:: (p22 && !p12 && !p24) -> goto T0_S15
-	:: (p22 && !p12) -> goto T0_S16
-	:: (p22 && !p24) -> goto T0_S17
-	:: (p22) -> goto T0_S10
-	:: (p14 && p22 && !p12 && !p24) -> goto accept_S12
-	:: (p14 && p22 && !p12) -> goto accept_S13
-	:: (p14 && p22 && !p24) -> goto accept_S14
-	:: (p14 && p22) -> goto accept_S11
+	:: (!p23) -> goto T0_init
+	:: (p13) -> goto T0_S7
 	fi;
 T0_S7:
 	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S21
-	:: (!p14 && !p22 && !p24) -> goto T0_S7
-	:: (!p14 && !p22) -> goto T0_S8
-	:: (!p14 && p24) -> goto T0_S9
-	:: (!p14 && p22 && !p12 && p24) -> goto T0_S16
-	:: (!p14 && p22 && p24) -> goto T0_S10
+	:: (1) -> goto T0_S7
+	:: (p23) -> goto T1_S7
+	:: (p23 && p21) -> goto accept_S7
 	fi;
-T0_S21:
+T1_S7:
 	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S21
-	:: (!p14 && !p22 && !p24) -> goto T0_S7
-	:: (!p14 && !p22) -> goto T0_S8
-	:: (!p14 && p24) -> goto T0_S9
-	:: (p22 && !p12 && p24) -> goto T0_S16
-	:: (p22 && p24) -> goto T0_S10
-	:: (p14 && p22 && !p12 && p24) -> goto accept_S13
-	:: (p14 && p22 && p24) -> goto accept_S11
+	:: (1) -> goto T1_S7
+	:: (p21) -> goto accept_S7
 	fi;
-T0_S8:
+accept_S7:
 	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S21
-	:: (!p14 && !p22 && !p24) -> goto T0_S7
-	:: (!p14 && !p22) -> goto T0_S8
-	:: (!p14 && !p22 && p24) -> goto T0_S9
-	fi;
-T0_S9:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S18
-	:: (!p14 && !p22 && !p24) -> goto T0_S20
-	:: (!p14 && !p22) -> goto T0_S9
-	fi;
-T0_S10:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto T0_S15
-	:: (!p14 && !p22 && !p12) -> goto T0_S16
-	:: (!p14 && !p22 && !p24) -> goto T0_S17
-	:: (!p14 && !p22) -> goto T0_S10
-	fi;
-accept_S11:
-	if
-	:: (!p14 && !p22 && !p12 && !p24) -> goto accept_S12
-	:: (!p14 && !p22 && !p12) -> goto accept_S13
-	:: (!p14 && !p22 && !p24) -> goto accept_S14
-	:: (!p14 && !p22) -> goto accept_S11
+	:: (1) -> goto T0_S7
+	:: (p23) -> goto T1_S7
+	:: (p23 && p21) -> goto accept_S7
 	fi;
 }
