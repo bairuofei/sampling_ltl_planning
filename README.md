@@ -8,8 +8,8 @@
 1. 基于采样的搜索方法在搜索后缀路径时又重新设置了根节点，搜索了一棵新的树。但是搜索前缀路径时所构建的树有可能用于后缀路径的搜索。
 2. 
 
-# networkx
-## graph attributes
+# Networkx
+## Graph attributes
 ```py
 # Add node: 
 G.add_node(1, label=['5pm'])
@@ -53,7 +53,7 @@ list(product_graph.nodes(data=True))
 G.edges(data=True)
 ```
 
-## graph plot
+## Graph plot
 ```py
 nx.draw(G,pos = nx.random_layout(G)，node_color = 'b',edge_color = 'r',\
     with_labels = True，font_size =18,node_size =20)
@@ -140,7 +140,7 @@ task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14)
 SURVEILLANCE=False
 ```
 
-## Case3: Two Robots, 3 trans nodes
+## Case3: 2 Robots, 3 trans nodes
 ```py
     # pay attention to modify the AP label
 
