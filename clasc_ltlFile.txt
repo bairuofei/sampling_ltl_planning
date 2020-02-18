@@ -1,0 +1,24 @@
+never { /* ([]<> p23) && ([]<> p21) && ((NOT p23) U p13) */
+T0_init:
+	if
+	:: (!p23) -> goto T0_init
+	:: (p13) -> goto T0_S7
+	fi;
+T0_S7:
+	if
+	:: (1) -> goto T0_S7
+	:: (p23) -> goto T1_S7
+	:: (p23 && p21) -> goto accept_S7
+	fi;
+T1_S7:
+	if
+	:: (1) -> goto T1_S7
+	:: (p21) -> goto accept_S7
+	fi;
+accept_S7:
+	if
+	:: (1) -> goto T0_S7
+	:: (p23) -> goto T1_S7
+	:: (p23 && p21) -> goto accept_S7
+	fi;
+}

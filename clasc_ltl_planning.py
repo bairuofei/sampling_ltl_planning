@@ -2,27 +2,27 @@
 import os
 import networkx as nx
 from gltl2ba import ltl_formula_to_ba
-from construct_pba import product_automaton
-from construct_pba import product_transition
-# from construct_pba import buchi_label_test
+from classical_func import product_automaton
+from classical_func import product_transition
 from show_graph import nx_to_graphviz_trans
 from show_graph import nx_to_graphviz_product
 import trans_sys
 
 ## Transition system
 trans_graph_list=[]
-trans_graph_list.append(trans_sys.samp_trans_graph1())
-trans_graph_list.append(trans_sys.samp_trans_graph2())
+trans_graph_list.append(trans_sys.clasc_trans_graph1())
+trans_graph_list.append(trans_sys.clasc_trans_graph2())
 trans_graph=product_transition(trans_graph_list)
 
 # LTL task formula
-SURVEILLANCE=False   # !!!!!!!!!! ATTENTION !!!!!!!!!
-task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
+SURVEILLANCE=True   # !!!!!!!!!! ATTENTION !!!!!!!!!
+task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+# task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
 # os.getcwd get current work directory
-LTL_FILE_POS=os.getcwd()+'/trad_ltlFile.txt'
+LTL_FILE_POS=os.getcwd()+'/clasc_ltlFile.txt'
 
 ## Init position
-init_pos=['n1', 'n1']
+init_pos=['n1','n1']
 init_pos_organize=[]
 for pos in init_pos:
     init_pos_organize.append(pos)
@@ -30,7 +30,7 @@ for pos in init_pos:
 # convert ltl to buchi automaton
 buchi_init_states=[]
 buchi_accept_states=[]
-[buchi_graph,buchi_init_states,buchi_accept_states]=ltl_formula_to_ba(task,LTL_FILE_POS,True)
+[buchi_graph,buchi_init_states,buchi_accept_states,buchi_dot_graph]=ltl_formula_to_ba(task,LTL_FILE_POS)
 
 ## 构建乘积自动机
 product_init_states=[]  # states have "init" 
@@ -39,14 +39,16 @@ product_accept_states=[]  # states have "accept"
 [product_graph,product_init_states,product_accept_states]=\
     product_automaton(trans_graph,buchi_graph)
     
-product_dot_graph=nx_to_graphviz_product(product_graph)
-product_dot_graph.show('product_graph')
-        
     
-
-
 trans_dot_graph=nx_to_graphviz_trans(trans_graph)
-trans_dot_graph.show('trans_graph')
+trans_dot_graph.show('clasc_trans_graph')
+
+buchi_dot_graph.show('clasc_buchi_graph')
+
+product_dot_graph=nx_to_graphviz_product(product_graph)
+# product_dot_graph.show('clasc_product_graph')        
+
+
     
 
 
@@ -134,5 +136,15 @@ print('best suffix path: '+str(best_suf_path_trans))
 print('best path weight:'+str(best_path_length['whole_path'])) 
 print('pre weight: '+str(best_path_length['pre_path'])+\
       ', suf weight: '+str(best_path_length['suf_path'])) 
+robot_path_list=[]
+for i in range(0,len(trans_graph_list)):
+    robot_path_list.append([])
+for i in range(0,len(trans_graph_list)):
+    for node in best_pre_path_trans:
+        robot_path_list[i].append(trans_graph.nodes[node]['ts_list'][i])
+    robot_path_list[i].append('+')
+    for node in best_suf_path_trans:
+        robot_path_list[i].append(trans_graph.nodes[node]['ts_list'][i])
+    print('Robot '+str(i)+': '+str(robot_path_list[i]))
 
 

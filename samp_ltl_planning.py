@@ -19,7 +19,7 @@ task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
 # task="(<>p12) && ((NOT p12) U p14) && ([](p14 -> X(NOT p12)))"
 # task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
 # task="(<>p14) && (<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22))) && ((NOT p14) U p22)"
-surveillance_task=True
+SURVEILLANCE=True #!!!!!!!ATTENTION!!!!!!!!!
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/samp_ltlFile.txt'
 
@@ -31,7 +31,7 @@ itera_suf_num=8000
 # convert ltl to buchi automaton
 buchi_init_states=[]
 buchi_accept_states=[]
-[buchi_graph,buchi_init_states,buchi_accept_states]=ltl_formula_to_ba(task,LTL_FILE_POS,True)
+[buchi_graph,buchi_init_states,buchi_accept_states,buchi_dot_graph]=ltl_formula_to_ba(task,LTL_FILE_POS)
 
 
 optimal_path=[[],[]]
@@ -54,7 +54,7 @@ for buchi_init_state in buchi_init_states:
     ## suffix path
     suf_path_list=[]
     suf_path_cost_list=[]
-    if surveillance_task:   # if has surveillance_task
+    if SURVEILLANCE:   # if has surveillance_task
         # TODO: accept state self loop check
         for node_index in pre_accept_tree_nodes:
             # below line is wrong, as the loop must contain accept status
@@ -125,23 +125,14 @@ print('optimal_path_cost: '+str(optimal_path_cost))
 for i in range(0,robot_num):        
     print('Robot '+str(i)+': '+str(robot_path[i]))
     
-
-#for i in range(0,len(pre_path_list)):
-#    print(pre_path_list[i])
-#    print('cost = '+str(pre_path_cost_list[i]))
-    
-# print(search_tree.nodes[28]['name'])
-
-
-search_dot_pre_tree=nx_to_graphviz_tree(pre_search_tree)
-search_dot_pre_tree.show('search_tree')
-
 trans_dot_graph1=nx_to_graphviz_trans(trans_graph[0])
-trans_dot_graph1.show('trans_graph1')
+trans_dot_graph1.show('samp_trans_graph1')
 trans_dot_graph2=nx_to_graphviz_trans(trans_graph[1])
-trans_dot_graph2.show('trans_graph2')
+trans_dot_graph2.show('samp_trans_graph2')
 
-#for i in range(0,len(pre_search_tree)):
-#    print(pre_search_tree.nodes[i]['ts_label'])
+buchi_dot_graph.show('samp_buchi_graph')
 
-# print(search_tree.nodes[19]['name'])
+# search_dot_pre_tree=nx_to_graphviz_tree(pre_search_tree)
+# search_dot_pre_tree.show('samp_search_tree')
+
+

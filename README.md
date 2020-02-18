@@ -1,5 +1,6 @@
 # Problems
 当LTL表达式中包含巡回任务时，巡回任务的执行顺序会影响前缀路径的最优性，同时也会影响后缀路径的最优性。
+
 原因在于LTL中的巡回任务的出现顺序会强制规定为这些任务的执行顺序，即实际上在任务执行前就已经规定了任务的执行顺序。
 这个特点削弱了LTL进行自动规划的能力。
 
@@ -9,27 +10,48 @@
 
 # networkx
 ## graph attributes
-Add node: `G.add_node(1, label=['5pm'])`
-Add edge: `G.add_edge(present_state, pat3_str.group(), weight=4)`
+```py
+# Add node: 
+G.add_node(1, label=['5pm'])
 
-Get specific node: `G.nodes[nodename]`
-Get node attr: `G.nodes[nodename][attr_name]`
-Get specific attribute of all nodes: `color = nx.get_node_attributes(G, 'color')`
-> return dict type
+# Add edge: 
+G.add_edge(present_state, pat3_str.group(), weight=4)
 
-Get edge attr: `G[nodename1][nodename2][attr_name]
-> You can also use this line to incrementally adding atttributes.
+# Get specific node: 
+G.nodes[nodename]
 
-Get specific attribute of all edges: `mix = nx.get_edge_attributes(G, 'mix')`
-> return dict type
+# Get node attr: 
+G.nodes[nodename][attr_name]
 
-Get reachable nodes of specific node: `graph[node_name]`
+# Get specific attribute of all nodes: 
+color = nx.get_node_attributes(G, 'color')
+# return dict type
 
-Node number: `len(G)`
-Edge number: `G.size()`
-Get all nodes: `G.nodes(data=True)` `list(product_graph.nodes(data=True))`
-Get all edges: `G.edges(data=True)`
+# Get edge attr: 
+G[nodename1][nodename2][attr_name]
+# You can also use this line to incrementally adding atttributes.
 
+# Get specific attribute of all edges: 
+mix = nx.get_edge_attributes(G, 'mix')
+# return dict type
+
+# Get reachable nodes of specific node: 
+graph[node_name]
+
+# Node number: 
+len(G)
+
+# Edge number: 
+G.size()
+
+# Get all nodes: 
+G.nodes(data=True)
+# Get all nodes name as a list
+list(product_graph.nodes(data=True))
+
+# Get all edges: 
+G.edges(data=True)
+```
 
 ## graph plot
 ```py
@@ -44,38 +66,47 @@ nx.draw(G,pos = nx.random_layout(G)，node_color = 'b',edge_color = 'r',\
 
 # LTL Formula
 
-> 注意：不能直接用next,而要用`-> X`， 否则会报错
-
 对比项：
 ```bash
-(<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 X (NOT p3)))      # wrong
-(<> p1) && (<> p2) && (<> p3) && (<> p4) && ([] (p2 -> X (NOT p3)))   # right
+# example 1: 不能直接用next,而要用`-> X`， 否则会报错
+(<> p1) && (<> p2) && (<> p3) && ([] (p2 X (NOT p3)))      # wrong
+(<> p1) && (<> p2) && (<> p3) && ([] (p2 -> X (NOT p3)))   # right
+
+# example 2
+(<> p1) && (<> p2) && (<> p3) && ([] ((NOT p2) U p3))      # wrong
+(<> p1) && (<> p2) && (<> p3) && ((NOT p2) U p3)           # right
+
 ```
 构建buchi自动机
 ```bash
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X p3)
+
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X(NOT p4))
+
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p2 -> X((NOT p4) && p3))
+
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p1 -> X(p2 && X(p3 && X(p4)))) 
+
 task_ltl: Fp1 && Fp2 && Fp3 && Fp4 && G(p1->X((NOT p3 && NOT p4)U(p2 && X((NOT p4 && NOT p1)U (p3 && X((NOT p1 && NOT p2)U p4))))))
 ```
 
-# others
-find()方法：查找子字符串，若找到返回从0开始的下标值，若找不到返回1
+# Others
+## Python Function 
+- find()方法：查找子字符串，若找到返回从0开始的下标值，若找不到返回1
 
 ## python entry
 基本数据类型的参数：值传递
 
 列表、元组、字典作为参数：指针传递
-> including networkx garph
+> networkx的garph类型进行传递时也是指针传递
+
 
 # Test Case
 
-## sam_Case4: Two Robots
+## Case4: 2 Robots, 4 trans nodes
 ```py
-    # pay attention to modify the label
-    
-    trans_graph=nx.DiGraph()
+    # pay attention to modify the AP label
+
     trans_graph.add_node('n1',name='n1',label=['p11'])
     trans_graph.add_node('n2',name='n2',label=['p12'])
     trans_graph.add_node('n3',name='n3',label=['p13'])
@@ -94,17 +125,25 @@ find()方法：查找子字符串，若找到返回从0开始的下标值，若�
     trans_graph.add_edge('n2','n2',weight=0.1)
     trans_graph.add_edge('n3','n3',weight=0.1)
     trans_graph.add_edge('n4','n4',weight=0.1) # we can set a very small number but not zero
+    for node in list(trans_graph.nodes):
+        trans_graph.nodes[node]['children']=list(trans_graph[node])
+
+
 ```
 ```py
+# task 1
 task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14)))"
+SURVEILLANCE=False
 
+# task 2
 task="(<>p14) && ((NOT p14) U p22) && ((NOT p22) U p12) && ([](p12 -> X(NOT p14))) && ((NOT p22) U p24) &&  ([](p24 -> X(NOT p22)))"
+SURVEILLANCE=False
 ```
 
-## sam_Case3: Two Robots
+## Case3: Two Robots, 3 trans nodes
 ```py
-def samp_trans_graph1():
-    trans_graph=nx.DiGraph()
+    # pay attention to modify the AP label
+
     trans_graph.add_node('n1',name='n1',label=['p11'])
     trans_graph.add_node('n2',name='n2',label=['p12'])
     trans_graph.add_node('n3',name='n3',label=['p13'])
@@ -117,59 +156,52 @@ def samp_trans_graph1():
     trans_graph.add_edge('n3','n3',weight=0.1) # we can set a very small number but not zero
     for node in list(trans_graph.nodes):
         trans_graph.nodes[node]['children']=list(trans_graph[node])
-    return trans_graph
-
-def samp_trans_graph2():
-    trans_graph=nx.DiGraph()
-    trans_graph.add_node('n1',name='n1',label=['p21'])
-    trans_graph.add_node('n2',name='n2',label=['p22'])
-    trans_graph.add_node('n3',name='n3',label=['p23'])
-    trans_graph.add_edge('n1','n2',weight=3)
-    trans_graph.add_edge('n2','n3',weight=3)
-    trans_graph.add_edge('n2','n1',weight=3)
-    trans_graph.add_edge('n3','n2',weight=3)
-    trans_graph.add_edge('n1','n1',weight=0.1)
-    trans_graph.add_edge('n2','n2',weight=0.1)
-    trans_graph.add_edge('n3','n3',weight=0.1) # we can set a very small number but not zero
-    for node in list(trans_graph.nodes):
-        trans_graph.nodes[node]['children']=list(trans_graph[node])
-    return trans_graph
 ```
 
 ```py
 # task1
 task="(<> p23) && ((NOT p22) U p12)"
+SURVEILLANCE=False
 
 # task2
 task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11))"
+SURVEILLANCE=False
 
 # task3
 task="(<> p23) && ((NOT p22) U p12) && ([](p23 -> p11)) && ((NOT p23) U p13)"
+SURVEILLANCE=False
 
 # task4 surveillance
 task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+SURVEILLANCE=True
 ```
 
-## tra_Case2: 3 node transition system, no surveillance
+## CASE 2: 3 node transition system, surveillance
 ```py
+weight_list=[3,5,1]
 task="(<> p1) && ([](<> p2)) && ([](<> p3))"
-surveillance_task=True
-
-weight_list3=[3,5,1]
+SURVEILLANCE=True
 ```
 
-## tra_Case1: 3 node transition system, no surveillance
+## CASE 1: 1 Robot, 3 node transition system, no surveillance
+The case 1 inluding 3 sub cases.
 ```py
-# task ltl formula
+# task 1
+weight_list=[3,2,2]
 task1="(<> p1) && (<> p2) && (<> p3)"
-surveillance_task=False
-# task2="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2)))"
-# task3="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2))) && ((NOT p3) U p2)"
+SURVEILLANCE=False
 
-weight_list1=[3,2,2]
-# weight_list2=[3,5,2]
-# weight_list3=[3,5,1]
-trans_graph=nx.DiGraph()
+# task 2
+weight_list=[3,5,2]
+task2="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2)))"
+SURVEILLANCE=False
+
+# task 3
+weight_list=[3,5,1]
+task3="(<> p1) && (<> p2) && (<> p3) && ([](p3 -> X (NOT p2))) && ((NOT p3) U p2)"
+SURVEILLANCE=False
+
+
 trans_graph.add_node('n1',name='n1',label=['p1'])
 trans_graph.add_node('n2',name='n2',label=['p2'])
 trans_graph.add_node('n3',name='n3',label=['p3'])
@@ -182,15 +214,7 @@ trans_graph.add_edge('n3','n1',weight=weight_list[2])
 trans_graph.add_edge('n1','n1',weight=0)
 trans_graph.add_edge('n2','n2',weight=0)
 trans_graph.add_edge('n3','n3',weight=0)
+for node in list(trans_graph.nodes):
+    trans_graph.nodes[node]['children']=list(trans_graph[node])
 ```
 
-
-
-
-task="(F p11) && (F p12) && (F p13) && (F p21) && (F p22) && (F p23) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
-
-task="(F p11) && (F p12) && (F p13) && (F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
-
-task="(F p24) && ((NOT p22) U p12) && ((NOT p23) U p13)"
-
-task="(F p23) && ((NOT p22) U p12)"

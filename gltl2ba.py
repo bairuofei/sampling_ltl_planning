@@ -119,13 +119,13 @@ class Ltl2baParser:
     
     
     
-def ltl_formula_to_ba(ltl,LTL_FILE_POS,show_graph):
+def ltl_formula_to_ba(ltl,LTL_FILE_POS):
     """调用gltl2ba,将ltl表达式转化为never claim
     将promela表达式转化成一个有向图,返回有向图"""
     buchi_init_state=[]
     buchi_accept_state=[]
     # 调用gltl2ba,将ltl表达式转化为never claim并存储在txt中
-    gltl2ba(ltl,LTL_FILE_POS,show_graph)
+    buchi_dot_graph=gltl2ba(ltl,LTL_FILE_POS)
     # 预编译正则表达式
     pat_state = re.compile(r'\w*_\w*')
     pat_transtion = re.compile(r'(?<=::.).*(?=.->)')
@@ -133,18 +133,18 @@ def ltl_formula_to_ba(ltl,LTL_FILE_POS,show_graph):
     # 提取所有的状态
     f = open(LTL_FILE_POS,'r')
     line = f.readline()
-    G=nx.DiGraph()
+    buchi_graph=nx.DiGraph()
     while line:
         if (line[0]!='\t') and (line[0:5]!='never') and line[0]!='}': # 说明是状态行
             pat1_str=pat_state.search(line)
             if pat1_str.group().find('init')!=-1:     # 说明是init
-                G.add_node(pat1_str.group(),name=pat1_str.group(),label='init')
+                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group(),label='init')
                 buchi_init_state.append(pat1_str.group())
             elif pat1_str.group().find('accept')!=-1:  # 说明是accpet状态
-                G.add_node(pat1_str.group(),name=pat1_str.group(),label='accept')
+                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group(),label='accept')
                 buchi_accept_state.append(pat1_str.group())
             else:
-                G.add_node(pat1_str.group(),name=pat1_str.group())
+                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group())
         line = f.readline()
     f.close()    
     # 提取边及边的label
@@ -158,14 +158,14 @@ def ltl_formula_to_ba(ltl,LTL_FILE_POS,show_graph):
         elif line[0:3]=='\t::':
             pat2_str=pat_transtion.search(line)
             pat3_str=pat_endstate.search(line)
-            G.add_edge(present_state, pat3_str.group(), label=pat2_str.group())    
+            buchi_graph.add_edge(present_state, pat3_str.group(), label=pat2_str.group())    
         line = f.readline()
     f.close()
-    return G,buchi_init_state,buchi_accept_state
+    return buchi_graph,buchi_init_state,buchi_accept_state,buchi_dot_graph
 
 
 
-def gltl2ba(ltl,LTL_FILE_POS,show_graph):
+def gltl2ba(ltl,LTL_FILE_POS):
 
     (output, err, exit_code) = run_ltl2ba(ltl)
 
@@ -180,14 +180,12 @@ def gltl2ba(ltl,LTL_FILE_POS,show_graph):
         assert match, output
 
         graph = Ltl2baParser.parse(match.group(1))
-        if show_graph:
-            graph.show('buchi_graph')
-#       print(graph)
+        
     else:
         eprint("{}: ltl2ba error:".format(__main__.__file__))
         eprint(output)
         sys.exit(exit_code)
-    return
+    return graph
 
 
 def run_ltl2ba(ltl):
@@ -197,7 +195,8 @@ def run_ltl2ba(ltl):
         process = Popen(ltl2ba_args, stdout=PIPE)
         (output, err) = process.communicate()
         exit_code = process.wait()
-    except FileNotFoundError as e:
+    # except FileNotFoundError as e:
+    except FileNotFoundError:
         eprint("{}: ltl2ba not found.\n".format(__main__.__file__))
         eprint("Please download ltl2ba from\n")
         eprint("\thttp://www.lsv.fr/~gastin/ltl2ba/ltl2ba-1.2b1.tar.gz\n")
