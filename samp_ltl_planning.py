@@ -13,9 +13,10 @@ from show_graph import nx_to_graphviz_trans
 trans_graph=[]
 trans_graph.append(trans_sys.samp_trans_graph1())
 trans_graph.append(trans_sys.samp_trans_graph2())
+trans_graph.append(trans_sys.samp_trans_graph3())
 
 # task formula
-task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+task="([]<> p23) && ([]<> p21) && ((NOT p23) U p33)"
 # task="(<>p12) && ((NOT p12) U p14) && ([](p14 -> X(NOT p12)))"
 # task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
 # task="(<>p14) && (<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22))) && ((NOT p14) U p22)"
@@ -24,7 +25,7 @@ SURVEILLANCE=True #!!!!!!!ATTENTION!!!!!!!!!
 LTL_FILE_POS=os.getcwd()+'/samp_ltlFile.txt'
 
 # initial_location
-init_pts=['n1','n1']
+init_pts=['n1','n1','n1']
 itera_pre_num=8000
 itera_suf_num=8000
 

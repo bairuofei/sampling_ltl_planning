@@ -1,8 +1,8 @@
-never { /* ([]<> p23) && ([]<> p21) && ((NOT p23) U p13) */
+never { /* ([]<> p23) && ([]<> p21) && ((NOT p23) U p33) */
 T0_init:
 	if
 	:: (!p23) -> goto T0_init
-	:: (p13) -> goto T0_S7
+	:: (p33) -> goto T0_S7
 	fi;
 T0_S7:
 	if

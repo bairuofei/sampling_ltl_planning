@@ -12,20 +12,23 @@ import trans_sys
 trans_graph_list=[]
 trans_graph_list.append(trans_sys.clasc_trans_graph1())
 trans_graph_list.append(trans_sys.clasc_trans_graph2())
+trans_graph_list.append(trans_sys.clasc_trans_graph3())
 trans_graph=product_transition(trans_graph_list)
+
+## Init position
+init_pos=['n1','n1','n1']
+init_pos_organize=[]
+for pos in init_pos:
+    init_pos_organize.append(pos)
 
 # LTL task formula
 SURVEILLANCE=True   # !!!!!!!!!! ATTENTION !!!!!!!!!
-task="([]<> p23) && ([]<> p21) && ((NOT p23) U p13)"
+task="([]<> p23) && ([]<> p21) && ((NOT p23) U p33)"
 # task="(<>p22) && ((NOT p22) U p24) && ([](p24 -> X(NOT p22)))"
 # os.getcwd get current work directory
 LTL_FILE_POS=os.getcwd()+'/clasc_ltlFile.txt'
 
-## Init position
-init_pos=['n1','n1']
-init_pos_organize=[]
-for pos in init_pos:
-    init_pos_organize.append(pos)
+
 
 # convert ltl to buchi automaton
 buchi_init_states=[]
