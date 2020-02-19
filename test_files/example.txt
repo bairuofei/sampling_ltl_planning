@@ -1,0 +1,26 @@
+never {
+T0_init:
+  if
+  :: ((!(p13)) && (!(p23))) -> goto T0_init
+  :: ((p13) && (!(p21)) && (p23)) -> goto T0_S1
+  :: ((p13) && (!(p23))) -> goto T0_S2
+  :: ((p13) && (p21) && (p23)) -> goto accept_S3
+  fi;
+T0_S1:
+  if
+  :: (!(p21)) -> goto T0_S1
+  :: (p21) -> goto accept_S3
+  fi;
+T0_S2:
+  if
+  :: ((!(p21)) && (p23)) -> goto T0_S1
+  :: (!(p23)) -> goto T0_S2
+  :: ((p21) && (p23)) -> goto accept_S3
+  fi;
+accept_S3:
+  if
+  :: ((!(p21)) && (p23)) -> goto T0_S1
+  :: (!(p23)) -> goto T0_S2
+  :: ((p21) && (p23)) -> goto accept_S3
+  fi;
+}
