@@ -4,12 +4,15 @@
 2. 基于采样(Sampling-based)LTL规划方法。即不再完整构建出联合环境切换系统，而是进行增量式的采样，来搜索乘积自动机的状态空间。
 # Installation-系统为Ubuntu16.04
 1. 为python3安装**graphviz**模块
+> [Graphviz - Graph Visualization Software](https://www.graphviz.org/)
 ```bash
 ~$ pip install graphviz
 ```
 > 若使用“`pip3 install graphviz`”，提示需要安装pip3工具
 
 2. 下载**ltl2ba**软件包ltl2ba-1.2 .tar.gz并安装。
+> [LTL2BA: fast translation from LTL formulae to Büchi automata](http://www.lsv.fr/~gastin/ltl2ba/index.php)
+
 > ltl2ba-1.2 .tar.gz软件压缩包已经预先下载到工程目录`dependencies`文件夹下
 ```bash
 ~$ cd 包含ltl2ba-1.2 .tar.gz的目录下
@@ -31,7 +34,9 @@
 # 可通过以下命令查看配置是否生效
  $ echo $PYTHONPATH
 ```
-3. \[可选\]下载**spot**软件包并安装
+3. \[**可选**\]下载**spot**软件包并安装
+> [Spot: a platform for LTL and ω-automata manipulation](https://spot.lrde.epita.fr/)
+
 > spot-2.8.5.tar.gz软件压缩包已经预先下载到工程目录｀dependencies`文件夹下
 
 > 详细安装步骤参考[Installing Spot](https://spot.lrde.epita.fr/install.html)，以及软件压缩包中的`README`和`INSTALL`文件
@@ -45,7 +50,7 @@
  $ make
  $ make install
 ```
-命令行工具：由于没有安装在默认的目录`~/usr`下，因此需要添加文件目录到路径中。
+命令行工具安装测试：由于没有安装在默认的目录`~/usr`下，因此需要添加文件目录到路径中。
 ```bash
 # 首先将prefix/bin路径添加到系统PATH环境变量
  $ gedit ~/.bashrc
@@ -55,7 +60,7 @@
 # 测试命令行工具是否成功安装
  $ ltl2tgba --version
 ```
-Python bindings： 由于没有安装在默认的目录`~/usr`下，因此需要添加文件目录到路径中
+Python bindings安装测试： 由于没有安装在默认的目录`~/usr`下，因此需要添加文件目录到路径中
 ```bash
 # 测试Python bindings是否链接成功
  $ python3
@@ -73,7 +78,7 @@ Python bindings： 由于没有安装在默认的目录`~/usr`下，因此需要
 # 可通过以下命令查看配置是否生效
 　$ echo $PYTHONPATH
 ```
-Man pages：(路径应该没有问题)
+Man pages安装测试：(应该无需修改)
 ```bash
  $ man spot
 # 如果报错"No manual entry for spot"，添加$prefix/man 到环境变量MANPATH中
@@ -128,12 +133,100 @@ Man pages：(路径应该没有问题)
 > **注意：**　当预估product transition system规模过大时，不建议开启绘图功能。因为绘图所用的时间可能远大于程序规划时间。
 2. 对采样LTL规划方法而言，目前提供了对每个机器人的transition system，　buchi automaton和采样搜索树sampling search tree三种类型图形的绘制功能，基于graphviz软件包。
 
+### Buchi自动机优化选项
+将LTL表达式转化为一个Buchi automaton，会有很多种可能的自动机化简方法。本项目所使用的**ltl2ba**工具包中，提供了部分选项用于修改自动机的化简方式.
+```bash
+# 在终端输入以下指令
+~$ ltl2ba -h
+# 终端显示以下配置选项。默认为"-c" "-f".可以在gltl2ba.py文件中修改.
+usage: ltl2ba [-flag] -f 'formula'
+                   or -F file
+ -f 'formula'	translate LTL into never claim
+ -F file	like -f, but with the LTL formula stored in a 1-line file
+ -d		display automata (D)escription at each step
+ -s		computing time and automata sizes (S)tatistics
+ -l		disable (L)ogic formula simplification
+ -p		disable a-(P)osteriori simplification
+ -o		disable (O)n-the-fly simplification
+ -c		disable strongly (C)onnected components simplification
+ -a		disable trick in (A)ccepting conditions
+```
+### LTL表达式语法
+> 摘自[LTL2BA: fast translation from LTL formulae to Büchi automata](http://www.lsv.fr/~gastin/ltl2ba/index.php)
+
+> 本项目中的LTL表达式采用Spin语法。
+
+An LTL formula may contain propositional symbols, boolean operators, temporal operators, and parentheses.
+
+Use spaces between any symbols.
+
+Propositonal Symbols:
+```text
+        true, false
+        any lowercase string
+```
+
+Boolean operators (no priority, use parentheses):
+> 注意：建议使用NOT代替！
+```text
+        !   (negation)
+        ->  (implication)
+        <-> (equivalence)
+        &&  (and)
+        ||  (or)
+```
+
+Temporal operators (no priority, use parentheses):
+```text
+        G   (always) (Spin syntax : [])
+        F   (eventually) (Spin syntax : <>)
+        U   (until)
+        R   (realease) (Spin syntax : V)
+        X   (next)
+```
+
 
 # Problems
+## 巡回任务对LTL规划的影响（surveillance task)
 当LTL表达式中包含巡回任务时，巡回任务的执行顺序会影响前缀路径的最优性，同时也会影响后缀路径的最优性。
 
-原因在于LTL中的巡回任务的出现顺序会强制规定为这些任务的执行顺序，即实际上在任务执行前就已经规定了任务的执行顺序。
-这个特点削弱了LTL进行自动规划的能力。
+具体表现为LTL中的巡回任务的出现顺序会强制规定为这些任务的执行顺序，即实际上在任务执行前就已经规定了任务的执行顺序。这个特点削弱了LTL进行自动规划的能力。
+
+需要注意的是，下面的LTL表达式依然可以成功转化为相应的Buchi自动机：
+```py
+# 任务在给定先p1后p2的顺序下，却要求在执行p1之前，p2需要被执行
+task="(GF p1) && (GF p2) && ((NOT p1) U p2)"
+```
+这种要求产生的结果是，可行路径会先经过p2，然后经过p1，但并没有结束，而是会再访问一遍p2，才能到达accept state。这一结果既满足了p1和p2的顺序要求，又验证了巡回任务对LTL规划的影响。
+
+## Buchi自动机优化选项对LTL规划的影响
+以下说明可以通过两个在线转化平台进行对比验证：
+1. [LTL2BA](http://www.lsv.fr/~gastin/ltl2ba/index.php)
+2. [Spot](https://spot.lrde.epita.fr/app/)
+> 注意：　Spot平台输入公式时应切换为英文输入法，与->&，或->|.
+
+举例说明.
+```py
+# 对task1的预期路径是：先满足p3,或者同时满足p1和p3，再满足p2
+task1="(GF p1) && (GF p2) && ((NOT p1) U p3)"
+```
+> 注意：根据until的语法，若p1和p3同时满足，也是符合`((NOT p1) U p３)`要求的.
+
+在LTL2BA默认生成的Buchi自动机中，若p1和p3同时满足，路径依然需要再满足一次p1，才能满足p2，到达accept state。在多机器人的任务协同中，这种情况会降低不同机器人之间协同工作的效率。
+
+修改LTL2BA工具的优化选项为`Disable strongly connected components simplification`，即`Buchi自动机优化选项`部分的"-c"选项，则生成的自动机满足要求。
+
+Spot平台默认的`Translation preference`为`Small`选项时，也存在上述问题。通过修改`Translation preference`为`Deterministic`选项，问题得到解决。
+
+> 在修改配置后的LTL2BA平台和Spot进行对比，可以发现Spot平台生成的自动机的转移关系更加`Deterministic`，而LTL2BA平台在输入某一个AP集合时，更有可能出现冗余的自循环。
+
+```py
+task2="(GF p1) && (GF p2)"
+```
+在修改配置后的LTL2BA平台和Spot进行对比，可以发现Spot平台生成的自动机,其初始状态即为accept state，即仅包含后缀路径。
+
+而LTL2BA平台具有独立的init state和accept state，先搜索一遍前缀路径之后再搜索后缀路径，但是此时的前缀路径与后缀路径相同。
+
 
 # Ideas
 1. 基于采样的搜索方法在搜索后缀路径时又重新设置了根节点，搜索了一棵新的树。但是搜索前缀路径时所构建的树有可能用于后缀路径的搜索。
@@ -194,11 +287,9 @@ nx.draw(G,\
         font_size =18,\
         node_size =20)
 ```
-- pos 指的是布局 主要有spring_layout,random_layout,circle_layout,shell_layout.
-- node_color 指节点颜色，有rbykw ,同理edge_color.
-- with_labels 指节点是否显示名字,size表示大小，font_color表示字的颜色.
-
-
+- `pos`: 指的是布局 主要有`spring_layout,random_layout,circle_layout,shell_layout`.
+- `node_color`: 指节点颜色，有`rbykw`. `edge_color`同理.
+- `with_labels`: 指节点是否显示名字,`size`表示大小，`font_color`表示字的颜色.
 
 # LTL Formula
 
@@ -351,3 +442,7 @@ for node in list(trans_graph.nodes):
     trans_graph.nodes[node]['children']=list(trans_graph[node])
 ```
 
+# 参考资料
+1. 经典LTL规划方法参考论文: [*Optimal path planning for surveillance with temporal-logic constraints.*](https://pdfs.semanticscholar.org/1fbb/cec5ffaf45af9317c5bddf8f5cf6a365d14f.pdf) Smith,S.L.,etc. (2011).  The International Journal of Robotics Research, 30(14), 1695–1708.
+2. 基于采样LTL规划方法参考论文[*Sampling-Based Optimal Control Synthesis for Multi-Robot Systems under Global Temporal Tasks.*](https://arxiv.org/pdf/1706.04216.pdf) Kantaros, Yiannis & Zavlanos, Michael. (2017). IEEE Transactions on Automatic Control. PP. 10.1109/TAC.2018.2853558. 
+3. `gltl2ba.py`中,将ltl2ba功能包的命令行输出结果通过管道读取到程序中的函数，参考自Github项目[gltl2ba](https://github.com/PatrickTrentin88/gltl2ba).

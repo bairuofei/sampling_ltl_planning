@@ -3,6 +3,8 @@ T0_init:
 	if
 	:: (!p23) -> goto T0_init
 	:: (p33) -> goto T0_S7
+	:: (p23 && p33) -> goto T1_S7
+	:: (p23 && p21 && p33) -> goto accept_S7
 	fi;
 T0_S7:
 	if

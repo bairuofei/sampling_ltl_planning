@@ -189,7 +189,7 @@ def gltl2ba(ltl,LTL_FILE_POS):
 
 
 def run_ltl2ba(ltl):
-    ltl2ba_args = ["ltl2ba", "-f", ltl]
+    ltl2ba_args = ["ltl2ba", "-c","-f",ltl]
     
     try:
         process = Popen(ltl2ba_args, stdout=PIPE)
