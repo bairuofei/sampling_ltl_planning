@@ -1,3 +1,12 @@
 {
-    "python.pythonPath": "/home/buffa/anaconda3/bin/python"
+    "python.pythonPath": "/home/buffa/anaconda3/bin/python",
+    "files.exclude": {
+        "*.pdf": true,
+        "*.txt": true,
+        "**/.DS_Store": true,
+        "**/.git": true,
+        "**/.hg": true,
+        "**/.svn": true,
+        "**/CVS": true
+    }
 }
