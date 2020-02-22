@@ -4,3 +4,4 @@
 .spyproject
 test_files
 __pycache__
+.gitignore
