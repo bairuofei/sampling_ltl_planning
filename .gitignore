@@ -1,2 +1,6 @@
-*.pyf
+*.pdf
 *.txt
+.vscode
+.spyproject
+test_files
+__pycache__
