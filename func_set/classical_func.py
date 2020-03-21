@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
 import time
 import networkx as nx
-from general_func import pts_trans_check
-from general_func import pts_trans_cost
-from general_func import buchi_label_test
+from func_set.general_func import pts_trans_check, pts_trans_cost, buchi_label_test
 
 
 def product_automaton(trans_graph, buchi_graph):
@@ -261,5 +259,8 @@ def classical_ltl_planning(robots_init_pos,
         if single_init_path_length['whole_path'] < best_path_length['whole_path']:
             best_path_length = single_init_path_length
             best_path = single_init_best_path
+
+    for key in list(best_path_length.keys()):
+        best_path_length[key] = round(best_path_length[key], 2)
 
     return best_path, best_path_length

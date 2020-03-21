@@ -2,11 +2,11 @@
 import os
 import json
 import networkx as nx
-from trans_sys import compute_trans_graph
-from gltl2ba import ltl_formula_to_ba
-from classical_func import product_automaton, product_transition, \
+from func_set.trans_sys import compute_trans_graph
+from func_set.gltl2ba import ltl_formula_to_ba
+from func_set.classical_func import product_automaton, product_transition, \
     classical_ltl_planning, get_robot_path
-from show_graph import nx_to_graphviz_trans, nx_to_graphviz_product
+from func_set.show_graph import nx_to_graphviz_trans, nx_to_graphviz_product
 
 
 if __name__ == '__main__':
