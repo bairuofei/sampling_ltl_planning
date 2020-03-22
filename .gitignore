@@ -1,6 +1,5 @@
 *.pdf
 *.txt
-.vscode
-test_files
-__pycache__
+/.vscode
+/test_files
 .gitignore

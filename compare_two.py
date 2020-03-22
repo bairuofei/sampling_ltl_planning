@@ -15,12 +15,6 @@ if __name__ == '__main__':
     with open('task_config.txt', 'r') as f:
         config = json.loads(f.read())
 
-    # classical Transition system
-    clasc_trans_graph_list = []
-    for robot_config_file in config['robots_config_file']:
-        clasc_trans_graph_list.append(compute_trans_graph(robot_config_file))
-    trans_graph = product_transition(clasc_trans_graph_list)
-
     # Init position
     robots_init_pos = config['robots_init_pos']
     robot_number = len(robots_init_pos)
@@ -39,16 +33,25 @@ if __name__ == '__main__':
     [buchi_graph, buchi_init_states, buchi_accept_states,
         buchi_dot_graph] = ltl_formula_to_ba(task, LTL_FILE_POS)
 
+    # classical planning start:
+    clasc_time_start = time.time()
+
+    clasc_trans_graph_list = []
+    for robot_config_file in config['robots_config_file']:
+        clasc_trans_graph_list.append(compute_trans_graph(robot_config_file))
+    trans_graph = product_transition(clasc_trans_graph_list)
+
     # 构建乘积自动机并返回三种类型节点集合
     [product_graph, product_init_states, product_accept_states] =\
         product_automaton(trans_graph, buchi_graph)
 
-    clasc_time_start = time.time()
     [clasc_optimal_path, clasc_optimal_path_cost] = classical_ltl_planning(
         robots_init_pos, is_surveillance, product_init_states, product_graph, product_accept_states)
 
     robot_path = get_robot_path(
         clasc_optimal_path, clasc_optimal_path_cost, robot_number, trans_graph, product_graph)
+
+    # classical planning end
     clasc_time_end = time.time()
 
     print(
@@ -66,7 +69,9 @@ if __name__ == '__main__':
     # buchi_dot_graph.show('clasc_buchi_graph')
     # product_dot_graph.show('clasc_product_graph')
 
-    # sampling Transition system
+    # sampling planning start
+    samp_time_start = time.time()
+
     samp_trans_graph_list = []
     for robot_config_file in config['robots_config_file']:
         samp_trans_graph_list.append(compute_trans_graph(robot_config_file))
@@ -74,7 +79,6 @@ if __name__ == '__main__':
     itera_pre_num = config['itera_pre_num']
     itera_suf_num = config['itera_suf_num']
 
-    samp_time_start = time.time()
     [samp_optimal_path, samp_optimal_path_cost] = sampling_ltl_planning(robots_init_pos, samp_trans_graph_list,
                                                                         buchi_graph, buchi_init_states,
                                                                         is_surveillance,
@@ -84,6 +88,8 @@ if __name__ == '__main__':
     pre_robot_path = list(zip(*samp_optimal_path[0]))
     suf_robot_path = list(zip(*samp_optimal_path[1]))
     robot_path = list(zip(pre_robot_path, suf_robot_path))
+
+    # sampling planning end
     samp_time_end = time.time()
 
     print(

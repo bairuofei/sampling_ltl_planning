@@ -322,7 +322,7 @@ if __name__ == '__main__':
 
     # save_count代表视频存储的frame数  save_count=1400
     ani = animation.FuncAnimation(
-        fig, animate, init_func=init, interval=80, blit=True)
+        fig, animate, init_func=init, interval=80, blit=True, save_count=1400)
     # ani.save('single_pendulum_nodecay.gif', writer='imagemagick')  # , fps=100
-    # ani.save('robot_navigation.mp4', fps=60, extra_args=['-vcodec', 'libx264'])
+    ani.save('robot_navigation.mp4', fps=60, extra_args=['-vcodec', 'libx264'])
     plt.show()
