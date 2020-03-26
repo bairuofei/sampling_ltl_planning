@@ -1,0 +1,22 @@
+03/26/2020 15:48:30 PM - INFO -    
+03/26/2020 15:48:30 PM - INFO - pts state number: 64
+03/26/2020 15:48:30 PM - INFO - robot number: 2
+03/26/2020 15:48:30 PM - INFO - buchi graph size: 72
+03/26/2020 15:48:30 PM - INFO - product automaton size: 4608
+03/26/2020 15:49:23 PM - INFO - computation time: 53.2069616317749 seconds.
+03/26/2020 15:49:23 PM - INFO - Robot0: ['s1', 'l2', 'l3', 'c1', 'l1', 'u1', 'u1', 'u1', 'u1'] + ['u1', 'u1', 'u1', 'u1']
+03/26/2020 15:49:23 PM - INFO - Robot1: ['s1', 's1', 's1', 's1', 's1', 'l1', 'l2', 'l3', 'l3'] + ['l1', 'l2', 'l3', 'l3']
+03/26/2020 15:49:23 PM - INFO - best path weight: 44.3
+03/26/2020 15:49:23 PM - INFO - pre weight: 34.8
+03/26/2020 15:49:23 PM - INFO - suf weight: 9.5
+03/26/2020 15:49:58 PM - INFO -    
+03/26/2020 15:49:58 PM - INFO - pts state number: 64
+03/26/2020 15:49:58 PM - INFO - robot number: 2
+03/26/2020 15:49:59 PM - INFO - buchi graph size: 72
+03/26/2020 15:49:59 PM - INFO - product automaton size: 4608
+03/26/2020 15:50:44 PM - INFO - computation time: 45.654240131378174 seconds.
+03/26/2020 15:50:44 PM - INFO - Robot0: ['s1', 's1', 'l3', 'c1', 'l2', 'l1', 'u1', 'u1', 'u1', 'u1', 'u1'] + ['u1', 'u1', 'u1']
+03/26/2020 15:50:44 PM - INFO - Robot1: ['s1', 'u1', 'u1', 'u1', 's1', 'u1', 's1', 'l1', 'l2', 'l3', 'l1'] + ['l2', 'l3', 'l1']
+03/26/2020 15:50:44 PM - INFO - best path weight: 514.7
+03/26/2020 15:50:44 PM - INFO - pre weight: 49.7
+03/26/2020 15:50:44 PM - INFO - suf weight: 465.0

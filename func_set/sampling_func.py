@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import random
+import logging
 import networkx as nx
 from func_set.general_func import buchi_label_test,\
     pts_trans_check, pts_trans_cost, product_trans_check
@@ -32,12 +33,11 @@ def sample(search_tree, trans_graph):
     pts_rand = search_tree.nodes[p_rand]['ts_name']  # list
     pts_new = []
     pts_index = 0
-    for ts_node in pts_rand:
+    for pts_index, ts_node in enumerate(pts_rand):
         ts_graph = trans_graph[pts_index]
         ts_children = ts_graph.nodes[ts_node]['children']  # list
         ts_rand = random.randint(0, len(ts_children)-1)
         pts_new.append(ts_children[ts_rand])
-        pts_index += 1
     return pts_new
 
 
@@ -158,7 +158,10 @@ def construct_tree_prefix(trans_graph, buchi_graph, init_pts, buchi_init_state, 
     search_tree = search_tree_init(init_pts, trans_graph, buchi_init_state)
     accept_tree_nodes = []
     for i in range(itera_pre_num):
+        print(
+            f'prefix interation: {i}. Size of accept tree node: {len(accept_tree_nodes)}')
         pts_new = sample(search_tree, trans_graph)  # list
+
         buchi_state_list = list(buchi_graph.nodes)
         for j in range(0, len(buchi_state_list)):
             b_new = buchi_state_list[j]
@@ -169,15 +172,17 @@ def construct_tree_prefix(trans_graph, buchi_graph, init_pts, buchi_init_state, 
                 new_node_index = extend(
                     search_tree, trans_graph, buchi_graph, p_new)
                 if new_node_index != -1:
+                    # logging.info(f'extend: {p_new}')
                     if p_new['buchi'].find('accept') != -1:
                         accept_tree_nodes.append(new_node_index)
             else:
                 rewire(search_tree, trans_graph,
                        buchi_graph, node_tree_check_value)
+
     return search_tree, accept_tree_nodes
 
 
-def pre_find_path(pre_accept_tree_nodes, search_tree):
+def pre_find_path(pre_accept_tree_nodes, search_tree, is_surveillance):
     """
     input: search tree, current accept state index, pre_path_cost_list
     output: prefix path, list type, whose element type is also list.
@@ -186,12 +191,26 @@ def pre_find_path(pre_accept_tree_nodes, search_tree):
     pre_path_list = []
     pre_path_cost_list = []
     for node_index in pre_accept_tree_nodes:
-        pre_path = []
-        backtrack_node = search_tree.nodes[node_index]['parent']
-        pre_path_cost_list.append(search_tree.nodes[backtrack_node]['cost'])
-        while backtrack_node != -1:
-            pre_path = [search_tree.nodes[backtrack_node]['ts_name']]+pre_path
-            backtrack_node = search_tree.nodes[backtrack_node]['parent']
+        if not is_surveillance:
+            pre_path = []
+            backtrack_node = search_tree.nodes[node_index]['parent']
+            pre_path_cost_list.append(
+                search_tree.nodes[backtrack_node]['cost'])
+            while backtrack_node != -1:
+                pre_path = [search_tree.nodes[backtrack_node]
+                            ['ts_name']]+pre_path
+                backtrack_node = search_tree.nodes[backtrack_node]['parent']
+
+        else:
+            pre_path = []
+            backtrack_node = node_index
+            pre_path_cost_list.append(
+                search_tree.nodes[backtrack_node]['cost'])
+            while backtrack_node != -1:
+                pre_path = [search_tree.nodes[backtrack_node]
+                            ['ts_name']]+pre_path
+                backtrack_node = search_tree.nodes[backtrack_node]['parent']
+
         if len(pre_path) != 0:
             pre_path_list.append(pre_path)
     return pre_path_list, pre_path_cost_list
@@ -210,7 +229,7 @@ def suf_find_path(search_tree, accept_tree_node, actual_accept_node_pts):
     while backtrack_node != -1:
         suf_path = [search_tree.nodes[backtrack_node]['ts_name']]+suf_path
         backtrack_node = search_tree.nodes[backtrack_node]['parent']
-    suf_path.append(actual_accept_node_pts)
+    # suf_path.append(actual_accept_node_pts)
     return suf_path
 
 
@@ -218,16 +237,17 @@ def construct_tree_suffix(trans_graph, buchi_graph, init_pts, buchi_init_state, 
     search_tree = search_tree_init(init_pts, trans_graph, buchi_init_state)
     accept_tree_nodes = []
     accept_tree_nodes_costs = []
-    pre_node = {'pts': search_tree.nodes[0]['ts_name'],
-                'buchi': search_tree.nodes[0]['buchi_name']}
+    root_node = {'pts': search_tree.nodes[0]['ts_name'],
+                 'buchi': search_tree.nodes[0]['buchi_name']}
     # check if it is the accept state
-    if (product_trans_check(trans_graph, buchi_graph, pre_node, actual_accept_node) == 1):
+    if (product_trans_check(trans_graph, buchi_graph, root_node, root_node) == 1):
         accept_tree_nodes.append(0)
-        accept_tree_nodes_costs.append(pts_trans_cost(pre_node['pts'],
-                                                      actual_accept_node['pts'], trans_graph))
+        accept_tree_nodes_costs.append(pts_trans_cost(root_node['pts'],
+                                                      root_node['pts'], trans_graph))
         return search_tree, accept_tree_nodes, accept_tree_nodes_costs
 
     for i in range(itera_suf_num):
+        print(f'suffix tree iteration: {i}')
         pts_new = sample(search_tree, trans_graph)  # list
         buchi_state_list = list(buchi_graph.nodes)
         for j in range(0, len(buchi_state_list)):
@@ -242,10 +262,10 @@ def construct_tree_suffix(trans_graph, buchi_graph, init_pts, buchi_init_state, 
                     pre_node = {'pts': search_tree.nodes[new_node_index]['ts_name'],
                                 'buchi': search_tree.nodes[new_node_index]['buchi_name']}
                     # check if it is the accept state
-                    if (product_trans_check(trans_graph, buchi_graph, pre_node, actual_accept_node) == 1):
+                    if (product_trans_check(trans_graph, buchi_graph, pre_node, root_node) == 1):
                         accept_tree_nodes.append(new_node_index)
                         accept_tree_nodes_costs.append(pts_trans_cost(pre_node['pts'],
-                                                                      actual_accept_node['pts'], trans_graph))
+                                                                      root_node['pts'], trans_graph))
             else:
                 rewire(search_tree, trans_graph,
                        buchi_graph, node_tree_check_value)
@@ -259,6 +279,7 @@ def sample_suffix_path(trans_graph_list,
     suf_path_list = []
     suf_path_cost_list = []
     for node_index in pre_accept_tree_nodes:
+        print(f'For accept tree node: {node_index} construct suffix tree.')
         # below line is wrong, as the loop must contain accept status
         # actual_accept_node=pre_search_tree.nodes[node_index]['parent']
         actual_accept_node_index = pre_search_tree.nodes[node_index]['parent']
@@ -272,13 +293,10 @@ def sample_suffix_path(trans_graph_list,
         # find minimum loop cost
         suf_path = []
         suf_path_cost = float('inf')
-        suf_delta_cost = pre_search_tree.nodes[node_index]['cost'] -\
-            pre_search_tree.nodes[actual_accept_node_index]['cost']
         for i in range(0, len(suf_accept_tree_nodes)):
             suf_accept_tree_node = suf_accept_tree_nodes[i]
             suf_one_path_cost = suf_search_tree.nodes[suf_accept_tree_node]['cost']\
-                + suf_accept_tree_nodes_costs[i]\
-                + suf_delta_cost
+                + suf_accept_tree_nodes_costs[i]
             if suf_one_path_cost < suf_path_cost:
                 suf_path_cost = suf_one_path_cost
                 suf_path = suf_find_path(suf_search_tree, suf_accept_tree_node,
@@ -292,19 +310,25 @@ def sample_suffix_path(trans_graph_list,
 def sampling_ltl_planning(robots_init_pos, trans_graph_list,
                           buchi_graph, buchi_init_states,
                           is_surveillance,
-                          itera_pre_num, itera_suf_num):
+                          itera_pre_num, itera_suf_num,
+                          path_weight):
     optimal_path = [[], []]
     optimal_path_cost = [float('inf'), float('inf')]
     # for every buchi init state, which means possible tree root
     for buchi_init_state in buchi_init_states:
         # prefix path
+        print(
+            f'For buchi init state {buchi_init_state} construct PREFIX tree.')
         [pre_search_tree, pre_accept_tree_nodes] = construct_tree_prefix(trans_graph_list, buchi_graph,
                                                                          robots_init_pos, buchi_init_state,
                                                                          itera_pre_num)
 
         # for every accept product state in current tree
         [pre_path_list, pre_path_cost_list] = pre_find_path(pre_accept_tree_nodes,
-                                                            pre_search_tree)
+                                                            pre_search_tree, is_surveillance)
+
+        print(
+            f'For buchi init state {buchi_init_state} construct SUFFIX tree.')
         # suffix path
         if is_surveillance:   # if has surveillance_task
             [suf_path_list, suf_path_cost_list] = sample_suffix_path(trans_graph_list,
@@ -319,11 +343,12 @@ def sampling_ltl_planning(robots_init_pos, trans_graph_list,
         single_init_path = [[], []]
         single_init_path_cost = [float('inf'), float('inf')]
         for i in range(len(pre_accept_tree_nodes)):
-            one_init_path_cost = pre_path_cost_list[i] + \
-                suf_path_cost_list[i]
+            one_init_pre_path_cost = pre_path_cost_list[i]*path_weight[0]
+            one_init_suf_path_cost = suf_path_cost_list[i]*path_weight[1]
+            one_init_path_cost = one_init_pre_path_cost+one_init_suf_path_cost
             if one_init_path_cost < single_init_path_cost[0]+single_init_path_cost[1]:
-                single_init_path_cost[0] = pre_path_cost_list[i]
-                single_init_path_cost[1] = suf_path_cost_list[i]
+                single_init_path_cost[0] = one_init_pre_path_cost
+                single_init_path_cost[1] = one_init_suf_path_cost
                 single_init_path[0] = pre_path_list[i]
                 single_init_path[1] = suf_path_list[i]
 
@@ -332,9 +357,26 @@ def sampling_ltl_planning(robots_init_pos, trans_graph_list,
             optimal_path_cost[0] = single_init_path_cost[0]
             optimal_path_cost[1] = single_init_path_cost[1]
             optimal_path[0] = single_init_path[0]
-            optimal_path[1] = single_init_path[1]
+            if is_surveillance:
+                optimal_path[1] = single_init_path[1][1:]
+                optimal_path[1].append(single_init_path[1][0])
+            else:
+                optimal_path[1] = single_init_path[1]
 
     for i, path_cost in enumerate(optimal_path_cost):
         optimal_path_cost[i] = round(path_cost, 2)
 
     return optimal_path, optimal_path_cost
+
+
+def samp_get_robot_path(optimal_path, robot_number):
+    robot_path = [[[], []] for i in range(robot_number)]
+    # 前缀路径
+    for i in range(robot_number):
+        for pts in optimal_path[0]:
+            robot_path[i][0].append(pts[i])
+    if len(optimal_path[1]) != 0:
+        for i in range(robot_number):
+            for pts in optimal_path[1]:
+                robot_path[i][1].append(pts[i])
+    return robot_path

@@ -25,8 +25,8 @@ class Graph:
     def edge(self, src, dst, label):
         self.dot.edge(src, dst, label)
 
-    def show(self,graph_name):
-        self.dot.render(graph_name,view=True)
+    def show(self, graph_name):
+        self.dot.render(graph_name, view=True)
 
     def save_render(self, path, on_screen):
         self.dot.render(path, view=on_screen)
@@ -116,61 +116,62 @@ class Ltl2baParser:
     @staticmethod
     def is_ignore(line):
         return Ltl2baParser.prog_ignore.match(line) is not None
-    
-    
-    
-def ltl_formula_to_ba(ltl,LTL_FILE_POS):
+
+
+def ltl_formula_to_ba(ltl, LTL_FILE_POS):
     """调用gltl2ba,将ltl表达式转化为never claim
     将promela表达式转化成一个有向图,返回有向图"""
-    buchi_init_state=[]
-    buchi_accept_state=[]
+    buchi_init_state = []
+    buchi_accept_state = []
     # 调用gltl2ba,将ltl表达式转化为never claim并存储在txt中
-    buchi_dot_graph=gltl2ba(ltl,LTL_FILE_POS)
+    buchi_dot_graph = gltl2ba(ltl, LTL_FILE_POS)
     # 预编译正则表达式
     pat_state = re.compile(r'\w*_\w*')
     pat_transtion = re.compile(r'(?<=::.).*(?=.->)')
     pat_endstate = re.compile(r'(?<=goto.)\w*_\w*')
     # 提取所有的状态
-    f = open(LTL_FILE_POS,'r')
+    f = open(LTL_FILE_POS, 'r')
     line = f.readline()
-    buchi_graph=nx.DiGraph()
+    buchi_graph = nx.DiGraph()
     while line:
-        if (line[0]!='\t') and (line[0:5]!='never') and line[0]!='}': # 说明是状态行
-            pat1_str=pat_state.search(line)
-            if pat1_str.group().find('init')!=-1:     # 说明是init
-                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group(),label='init')
+        if (line[0] != '\t') and (line[0:5] != 'never') and line[0] != '}':  # 说明是状态行
+            pat1_str = pat_state.search(line)
+            if pat1_str.group().find('init') != -1:     # 说明是init
+                buchi_graph.add_node(
+                    pat1_str.group(), name=pat1_str.group(), label='init')
                 buchi_init_state.append(pat1_str.group())
-            elif pat1_str.group().find('accept')!=-1:  # 说明是accpet状态
-                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group(),label='accept')
+            elif pat1_str.group().find('accept') != -1:  # 说明是accpet状态
+                buchi_graph.add_node(
+                    pat1_str.group(), name=pat1_str.group(), label='accept')
                 buchi_accept_state.append(pat1_str.group())
             else:
-                buchi_graph.add_node(pat1_str.group(),name=pat1_str.group())
-        line = f.readline()
-    f.close()    
-    # 提取边及边的label
-    f = open(LTL_FILE_POS,'r')
-    line = f.readline()
-    present_state=''
-    while line:
-        if (line[0]!='\t') and (line[0:5]!='never') and line[0]!='}': # 说明是状态行
-            pat1_str=pat_state.search(line)
-            present_state=pat1_str.group()
-        elif line[0:3]=='\t::':
-            pat2_str=pat_transtion.search(line)
-            pat3_str=pat_endstate.search(line)
-            buchi_graph.add_edge(present_state, pat3_str.group(), label=pat2_str.group())    
+                buchi_graph.add_node(pat1_str.group(), name=pat1_str.group())
         line = f.readline()
     f.close()
-    return buchi_graph,buchi_init_state,buchi_accept_state,buchi_dot_graph
+    # 提取边及边的label
+    f = open(LTL_FILE_POS, 'r')
+    line = f.readline()
+    present_state = ''
+    while line:
+        if (line[0] != '\t') and (line[0:5] != 'never') and line[0] != '}':  # 说明是状态行
+            pat1_str = pat_state.search(line)
+            present_state = pat1_str.group()
+        elif line[0:3] == '\t::':
+            pat2_str = pat_transtion.search(line)
+            pat3_str = pat_endstate.search(line)
+            buchi_graph.add_edge(
+                present_state, pat3_str.group(), label=pat2_str.group())
+        line = f.readline()
+    f.close()
+    return buchi_graph, buchi_init_state, buchi_accept_state, buchi_dot_graph
 
 
-
-def gltl2ba(ltl,LTL_FILE_POS):
+def gltl2ba(ltl, LTL_FILE_POS):
 
     (output, err, exit_code) = run_ltl2ba(ltl)
 
     if exit_code != 1:
-        with open(LTL_FILE_POS,"w") as f:
+        with open(LTL_FILE_POS, "w") as f:
             f.write(output)
 
         prog = re.compile("^[\s\S\w\W]*?"
@@ -180,7 +181,7 @@ def gltl2ba(ltl,LTL_FILE_POS):
         assert match, output
 
         graph = Ltl2baParser.parse(match.group(1))
-        
+
     else:
         eprint("{}: ltl2ba error:".format(__main__.__file__))
         eprint(output)
@@ -189,8 +190,9 @@ def gltl2ba(ltl,LTL_FILE_POS):
 
 
 def run_ltl2ba(ltl):
-    ltl2ba_args = ["ltl2ba", "-c","-f",ltl]
-    
+    # ltl2ba_args = ["ltl2ba", "-f", ltl]
+    ltl2ba_args = ["ltl2ba", "-c", "-f", ltl]
+
     try:
         process = Popen(ltl2ba_args, stdout=PIPE)
         (output, err) = process.communicate()
@@ -208,8 +210,6 @@ def run_ltl2ba(ltl):
 
     return output, err, exit_code
 
+
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
-    
-    
-

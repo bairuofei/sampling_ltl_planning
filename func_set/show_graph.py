@@ -18,7 +18,7 @@ def nx_to_graphviz_product(product_graph):
                 str(node), product_graph.nodes[node]['name'], False)
         for reachable_node in product_graph[node]:
             product_dot_graph.edge(str(node), str(reachable_node), str(
-                product_graph[node][reachable_node]['weight']))
+                product_graph[node][reachable_node]['label']))
     return product_dot_graph
 
 

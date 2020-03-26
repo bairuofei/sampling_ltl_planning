@@ -1,0 +1,13 @@
+03/26/2020 15:33:16 PM - INFO -     
+03/26/2020 15:33:16 PM - INFO - product ts size: 64
+03/26/2020 15:33:16 PM - INFO - buchi graph size: 16
+03/26/2020 15:33:16 PM - INFO - product graph state number: 1024
+03/26/2020 15:33:24 PM - INFO - product automaton size: 1024
+03/26/2020 15:33:24 PM - INFO - search init states size: 1
+03/26/2020 15:33:24 PM - INFO - search init state: 0
+03/26/2020 15:33:26 PM - INFO - computation time: 10.266083002090454 seconds.
+03/26/2020 15:33:26 PM - INFO - Robot0: [['s1', 'z1', 'l1', 'l2', 'l3', 'u1'], []]
+03/26/2020 15:33:26 PM - INFO - Robot1: [['s1', 's1', 's1', 'z1', 'z1', 'c1'], []]
+03/26/2020 15:33:26 PM - INFO - best path weight: 21.3
+03/26/2020 15:33:26 PM - INFO - pre weight: 21.3
+03/26/2020 15:33:26 PM - INFO - suf weight: 0

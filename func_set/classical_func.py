@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+import logging
 import networkx as nx
 from func_set.general_func import pts_trans_check, pts_trans_cost, buchi_label_test
 
@@ -22,6 +23,9 @@ def product_automaton(trans_graph, buchi_graph):
                                    init=False,
                                    accept=False,
                                    parent=[])
+            print(
+                f'PA: add node {product_add_node_index}: {trans_node},{buchi_node}')
+
             if buchi_node.find('init') != -1:  # 起始节点
                 init_node_list.append(product_add_node_index)
                 product_graph.nodes[product_add_node_index]['init'] = True
@@ -31,6 +35,8 @@ def product_automaton(trans_graph, buchi_graph):
             product_add_node_index = product_add_node_index+1
     # 构建乘积自动机的边
     product_state_num = len(product_graph)  # get the number of nodes
+    print(f'product graph state number: {product_state_num}')
+    logging.info(f'product graph state number: {product_state_num}')
     # consider all the combination of two states once, check bi-direction simultaneously
     # which means ignore self loop
     for i in range(0, product_state_num-1):
@@ -48,6 +54,9 @@ def product_automaton(trans_graph, buchi_graph):
                                            [product_graph.nodes[j]
                                                ['ts_name']]['weight'],
                                            label=buchi_label)
+
+                    print(
+                        f'PA: add edge {i}->{j}. product state number: {product_state_num}')
                     # modify parent node list
                     product_graph.nodes[j]['parent'].append(i)
 #                print("buchi label: "+buchi_label)
@@ -131,46 +140,69 @@ def product_transition(trans_graph_list):
     return product_trans_graph
 
 
-def compute_prefix_path(product_graph, search_init_state, product_accept_states):
-    prefix_path = []
-    prefix_path_length = float("inf")
+def compute_prefix_path(product_graph, search_init_state, product_accept_states, is_surveillance):
+    prefix_path_list = []
+    prefix_path_length = []
     # for all accept states, find minimize prefix path
     for product_accept_state in product_accept_states:
         try:
             one_pre_path = nx.dijkstra_path(
                 product_graph, search_init_state, product_accept_state, weight='weight')
             one_pre_path_length = nx.dijkstra_path_length(
-                product_graph, search_init_state, one_pre_path[-2], weight='weight')
-            if one_pre_path_length < prefix_path_length:
-                prefix_path_length = one_pre_path_length
-                prefix_path = one_pre_path
+                product_graph, search_init_state, product_accept_state, weight='weight')
+            if is_surveillance:
+                prefix_path_list.append(one_pre_path)
+                prefix_path_length.append(one_pre_path_length)
+            else:
+                prefix_path_list.append(one_pre_path[:-1])
+                delta_cost = product_graph[one_pre_path[-2]
+                                           ][product_accept_state]['weight']
+                prefix_path_length.append(one_pre_path_length-delta_cost)
         except nx.NetworkXNoPath:
-            print('[Prefix ATTENTION], node '+str(search_init_state)+' to node ' +
-                  str(product_accept_state)+' has no path!!')
+            print(
+                f'[Pre ATTENTION], node {search_init_state} to node{product_accept_state} has no path!!')
+            # logging.info(
+            #   f'[Pre ATTENTION], node {product_graph.nodes[search_init_state]["name"]} to node{product_graph.nodes[product_accept_state]["name"]} has no path!!')
             continue
-    return prefix_path, prefix_path_length
+    return prefix_path_list, prefix_path_length
 
 
 def compute_suffix_path(product_graph, prefix_path, product_accept_states):
     suffix_path = []
     suffix_path_length = float("inf")
-    for product_accept_state in product_accept_states:
-        if product_accept_state in list(product_graph[prefix_path[-2]]):
-            try:
-                one_suf_path = nx.dijkstra_path(product_graph, product_accept_state,
-                                                prefix_path[-2], weight='weight')
-                one_suf_path_length = nx.dijkstra_path_length(
-                    product_graph, product_accept_state, prefix_path[-2], weight='weight')
-                one_suf_path_length += product_graph[prefix_path[-2]
-                                                     ][product_accept_state]['weight']
-                if one_suf_path_length < suffix_path_length:
-                    suffix_path_length = one_suf_path_length
-                    suffix_path = one_suf_path
-            except nx.NetworkXNoPath:
-                print('[Suffix ATTENTION], node '+str(product_accept_state)+' to node ' +
-                      str(prefix_path[-2])+' has no path!!')
-                continue
+    init_node = prefix_path[-1]
+    [suffix_path, suffix_path_length] = target_list_dijkstra(product_graph, init_node,
+                                                             product_graph.nodes[init_node]['parent'],
+                                                             weight='weight')
     return suffix_path, suffix_path_length
+
+
+def target_list_dijkstra(graph, start_node, target_node_list, weight):
+    # self loop
+    min_suf_path = []
+    min_suf_pathlength = float('inf')
+    if start_node in list(graph[start_node]):
+        min_suf_path.append(start_node)
+        min_suf_pathlength = graph[start_node][start_node]['weight']
+        return min_suf_path, min_suf_pathlength
+    # target_list
+    for target_node in target_node_list:
+        try:
+            one_suf_path = nx.dijkstra_path(graph, start_node,
+                                            target_node, weight=weight)
+            one_suf_path_length = nx.dijkstra_path_length(graph, start_node,
+                                                          target_node, weight=weight)
+            one_suf_path_length += graph[target_node][start_node]['weight']
+            if one_suf_path_length < min_suf_pathlength:
+                min_suf_path = one_suf_path
+                min_suf_pathlength = one_suf_path_length
+        except nx.NetworkXNoPath:
+            print(
+                f'[Suf ATTENTION], node {graph.nodes[start_node]["name"]} to node {graph.nodes[target_node]["name"]} has no path!!')
+            # logging.info(
+            #     f'[Suf ATTENTION], node {graph.nodes[start_node]["name"]} to node {graph.nodes[target_node]["name"]} has no path!!')
+            continue
+    return min_suf_path, min_suf_pathlength
 
 
 def get_single_init_best_path(prefix_path, prefix_path_length,
@@ -178,8 +210,9 @@ def get_single_init_best_path(prefix_path, prefix_path_length,
                               single_init_best_path, single_init_path_length,
                               is_surveillance):
     if is_surveillance:
-        single_init_best_path['pre_path'] = prefix_path[:-1]
-        single_init_best_path['suf_path'] = suffix_path
+        single_init_best_path['pre_path'] = prefix_path
+        single_init_best_path['suf_path'] = suffix_path[1:]
+        single_init_best_path['suf_path'].append(suffix_path[0])
         single_init_best_path['whole_path'] = single_init_best_path['pre_path'] + \
             single_init_best_path['suf_path']
         single_init_path_length['pre_path'] = prefix_path_length
@@ -187,8 +220,8 @@ def get_single_init_best_path(prefix_path, prefix_path_length,
         single_init_path_length['whole_path'] = prefix_path_length + \
             suffix_path_length
     else:
-        single_init_best_path['whole_path'] = prefix_path[:-1]
-        single_init_best_path['pre_path'] = prefix_path[:-1]
+        single_init_best_path['whole_path'] = prefix_path
+        single_init_best_path['pre_path'] = prefix_path
         # no suffix path
         single_init_path_length['pre_path'] = prefix_path_length
         single_init_path_length['suf_path'] = 0
@@ -207,16 +240,22 @@ def get_robot_path(best_path, best_path_length, robot_number, trans_graph, produ
         pts_name = trans_graph.nodes[pts_name_str]['ts_list']
         best_suf_path_trans.append(pts_name)
 
-    pre_robot_path = list(zip(*best_pre_path_trans))
-    suf_robot_path = list(zip(*best_suf_path_trans))
-    robot_path = list(zip(pre_robot_path, suf_robot_path))
+    robot_path = [[[], []] for i in range(robot_number)]
+    for i in range(robot_number):
+        for pts in best_pre_path_trans:
+            robot_path[i][0].append(pts[i])
+    if len(best_suf_path_trans) != 0:
+        for i in range(robot_number):
+            for pts in best_suf_path_trans:
+                robot_path[i][1].append(pts[i])
 
     return robot_path
 
 
 def classical_ltl_planning(robots_init_pos,
                            is_surveillance,
-                           product_init_states, product_graph, product_accept_states):
+                           product_init_states, product_graph, product_accept_states,
+                           path_weight):
     # best path for specific init state
     single_init_best_path = {'whole_path': [],
                              'pre_path': [],
@@ -237,24 +276,49 @@ def classical_ltl_planning(robots_init_pos,
         if product_graph.nodes[product_init_state]['ts_name'] == str(robots_init_pos):
             # if more than one init state in NBA, so as the product init state
             search_init_states.append(product_init_state)
+
+    print(f"search init states size: {len(search_init_states)}")
+    logging.info(f"search init states size: {len(search_init_states)}")
+
     for search_init_state in search_init_states:
-        [prefix_path, prefix_path_length] = compute_prefix_path(
-            product_graph, search_init_state, product_accept_states)
+
+        print(f"search init state: {search_init_state}")
+        logging.info(f"search init state: {search_init_state}")
 
         if is_surveillance:
-            [suffix_path, suffix_path_length] = compute_suffix_path(
-                product_graph, prefix_path, product_accept_states)
-
-            get_single_init_best_path(prefix_path, prefix_path_length,
-                                      suffix_path, suffix_path_length,
-                                      single_init_best_path, single_init_path_length,
-                                      is_surveillance=True)
+            [prefix_path_list, prefix_path_length] = compute_prefix_path(
+                product_graph, search_init_state, product_accept_states, is_surveillance)
+            if len(prefix_path_list) != 0:
+                for i, prefix_path in enumerate(prefix_path_list):
+                    [suffix_path, suffix_path_length] = compute_suffix_path(
+                        product_graph, prefix_path, product_accept_states)
+                    if prefix_path_length[i]*path_weight[0]+suffix_path_length*path_weight[1] < single_init_path_length['whole_path']:
+                        get_single_init_best_path(prefix_path, prefix_path_length[i]*path_weight[0],
+                                                  suffix_path, suffix_path_length *
+                                                  path_weight[1],
+                                                  single_init_best_path, single_init_path_length,
+                                                  is_surveillance=True)
+            else:
+                print(
+                    f'No prefix path found for init state {product_graph.nodes[search_init_state]["name"]}')
 
         else:
-            get_single_init_best_path(prefix_path, prefix_path_length,
-                                      suffix_path, suffix_path_length,
-                                      single_init_best_path, single_init_path_length,
-                                      is_surveillance=False)
+            [prefix_path_list, prefix_path_length] = compute_prefix_path(
+                product_graph, search_init_state, product_accept_states, is_surveillance)
+            if len(prefix_path_list) != 0:
+                min_prefix_index = -1
+                min_prefix_length = float('inf')
+                for k, path_length in enumerate(prefix_path_length):
+                    if path_length < min_prefix_length:
+                        min_prefix_index = k
+
+                get_single_init_best_path(prefix_path_list[min_prefix_index], prefix_path_length[min_prefix_index],
+                                          [], float('inf'),
+                                          single_init_best_path, single_init_path_length,
+                                          is_surveillance=False)
+            else:
+                print(
+                    f'No prefix path found for init state {product_graph.nodes[search_init_state]["name"]}')
 
         if single_init_path_length['whole_path'] < best_path_length['whole_path']:
             best_path_length = single_init_path_length
@@ -264,3 +328,86 @@ def classical_ltl_planning(robots_init_pos,
         best_path_length[key] = round(best_path_length[key], 2)
 
     return best_path, best_path_length
+
+# def classical_ltl_planning(robots_init_pos,
+#                            is_surveillance,
+#                            product_init_states, product_graph, product_accept_states):
+#     # best path for specific init state
+#     single_init_best_path = {'whole_path': [],
+#                              'pre_path': [],
+#                              'suf_path': []}
+#     single_init_path_length = {'whole_path': float("inf"),
+#                                'pre_path': float("inf"),
+#                                'suf_path': float("inf")}
+
+#     best_path = {'whole_path': [],
+#                  'pre_path': [],
+#                  'suf_path': []}
+#     best_path_length = {'whole_path': float("inf"),
+#                         'pre_path': float("inf"),
+#                         'suf_path': float("inf")}
+
+#     search_init_states = []  # init state to search
+#     for product_init_state in product_init_states:
+#         if product_graph.nodes[product_init_state]['ts_name'] == str(robots_init_pos):
+#             # if more than one init state in NBA, so as the product init state
+#             search_init_states.append(product_init_state)
+
+#     print(f"search init states size: {len(search_init_states)}")
+#     logging.info(f"search init states size: {len(search_init_states)}")
+
+#     for search_init_state in search_init_states:
+
+#         print(f"search init state: {search_init_state}")
+#         logging.info(f"search init state: {search_init_state}")
+
+#         [prefix_path, prefix_path_length] = compute_prefix_path(
+#             product_graph, search_init_state, product_accept_states)
+
+#         if len(prefix_path) != 0:  # there exist a prefix path for current init state
+#             if is_surveillance:
+#                 [suffix_path, suffix_path_length] = compute_suffix_path(
+#                     product_graph, prefix_path, product_accept_states)
+
+#                 get_single_init_best_path(prefix_path, prefix_path_length,
+#                                           suffix_path, suffix_path_length,
+#                                           single_init_best_path, single_init_path_length,
+#                                           is_surveillance=True)
+
+#             else:
+#                 get_single_init_best_path(prefix_path, prefix_path_length,
+#                                           suffix_path, suffix_path_length,
+#                                           single_init_best_path, single_init_path_length,
+#                                           is_surveillance=False)
+
+#             if single_init_path_length['whole_path'] < best_path_length['whole_path']:
+#                 best_path_length = single_init_path_length
+#                 best_path = single_init_best_path
+
+#     for key in list(best_path_length.keys()):
+#         best_path_length[key] = round(best_path_length[key], 2)
+
+#     return best_path, best_path_length
+
+# def compute_suffix_path(product_graph, prefix_path, product_accept_states):
+#     suffix_path = []
+#     suffix_path_length = float("inf")
+#     for product_accept_state in product_accept_states:
+#         if len(prefix_path) <= 1:
+#             pass
+#         if product_accept_state in list(product_graph[prefix_path[-2]]):
+#             try:
+#                 one_suf_path = nx.dijkstra_path(product_graph, product_accept_state,
+#                                                 prefix_path[-2], weight='weight')
+#                 one_suf_path_length = nx.dijkstra_path_length(
+#                     product_graph, product_accept_state, prefix_path[-2], weight='weight')
+#                 one_suf_path_length += product_graph[prefix_path[-2]
+#                                                      ][product_accept_state]['weight']
+#                 if one_suf_path_length < suffix_path_length:
+#                     suffix_path_length = one_suf_path_length
+#                     suffix_path = one_suf_path
+#             except nx.NetworkXNoPath:
+#                 print('[Suffix ATTENTION], node '+str(product_accept_state)+' to node ' +
+#                       str(prefix_path[-2])+' has no path!!')
+#                 continue
+#     return suffix_path, suffix_path_length
