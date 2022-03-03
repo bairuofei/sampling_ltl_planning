@@ -21,79 +21,83 @@ if __name__ == '__main__':
                         level=logging.DEBUG)
     logging.info("    ")
 
-    with open('task_config.txt', 'r') as f:
-        config = json.loads(f.read())
-    clasc_start_time = time.time()
+    for txt_name in ['./robot_ts/caseA.txt']:
+        logging.info('-------------------------------------------------')
 
-    # path weight
-    path_weight = config['path_weight']
+        with open(txt_name, 'r') as f:
+            config = json.loads(f.read())
+        clasc_start_time = time.time()
 
-    # Transition system
-    trans_graph_list = []
-    for robot_config_file in config['robots_config_file']:
-        trans_graph_list.append(compute_trans_graph(robot_config_file))
-    print("start read transition system:")
-    trans_graph = product_transition(trans_graph_list)
-    print(f"product ts size: {len(trans_graph)}")
-    logging.info(f"product ts size: {len(trans_graph)}")
+        # path weight
+        path_weight = config['path_weight']
 
-    # Init position
-    robots_init_pos = config['robots_init_pos']
-    robot_number = len(robots_init_pos)
+        # Transition system
+        trans_graph_list = []
+        for robot_config_file in config['robots_config_file']:
+            trans_graph_list.append(compute_trans_graph(robot_config_file))
+        print("start read transition system:")
+        trans_graph = product_transition(trans_graph_list)
+        print(f"product ts size: {len(trans_graph)}")
+        logging.info(f"product ts size: {len(trans_graph)}")
 
-    # LTL task formula
-    if config['is_task_surveillance'] == 'False':
-        is_surveillance = False
-    else:
-        is_surveillance = True
-    task = config['ltl_task']
+        # Init position
+        robots_init_pos = config['robots_init_pos']
+        robot_number = len(robots_init_pos)
 
-    # os.getcwd get current work directory
-    LTL_FILE_POS = os.getcwd()+'/clasc_ltlFile.txt'
+        # LTL task formula
+        task = config['ltl_task']
+        logging.info(f'ltl task: {task}')
+        if "[]<>" in task or "[] <>" in task:
+            is_surveillance = True
+        else:
+            is_surveillance = False
 
-    # convert ltl to buchi automaton
-    print("start converting buchi automaton:")
-    [buchi_graph, buchi_init_states, buchi_accept_states,
-        buchi_dot_graph] = ltl_formula_to_ba(task, LTL_FILE_POS)
-    print(f'buchi graph size: {len(buchi_graph)}')
-    logging.info(f'buchi graph size: {len(buchi_graph)}')
+        # os.getcwd get current work directory
+        LTL_FILE_POS = os.getcwd()+'/clasc_ltlFile.txt'
 
-    # 构建乘积自动机并返回三种类型节点集合
-    print("start construct product automaton:")
-    [product_graph, product_init_states, product_accept_states] =\
-        product_automaton(trans_graph, buchi_graph)
-    print(f'product automaton size: {len(product_graph)}')
-    logging.info(f'product automaton size: {len(product_graph)}')
+        # convert ltl to buchi automaton
+        print("start converting buchi automaton:")
+        [buchi_graph, buchi_init_states, buchi_accept_states,
+            buchi_dot_graph] = ltl_formula_to_ba(task, LTL_FILE_POS)
+        print(f'buchi graph size: {len(buchi_graph)}')
+        logging.info(f'buchi graph size: {len(buchi_graph)}')
 
-    [best_path, best_path_length] = classical_ltl_planning(robots_init_pos,
-                                                           is_surveillance,
-                                                           product_init_states,
-                                                           product_graph,
-                                                           product_accept_states,
-                                                           path_weight)
+        # 构建乘积自动机并返回三种类型节点集合
+        print("start construct product automaton:")
+        [product_graph, product_init_states, product_accept_states] =\
+            product_automaton(trans_graph, buchi_graph)
+        print(f'product automaton size: {len(product_graph)}')
+        logging.info(f'product automaton size: {len(product_graph)}')
 
-    robot_path = get_robot_path(
-        best_path, best_path_length, robot_number, trans_graph, product_graph)
+        [best_path, best_path_length] = classical_ltl_planning(robots_init_pos,
+                                                               is_surveillance,
+                                                               product_init_states,
+                                                               product_graph,
+                                                               product_accept_states,
+                                                               path_weight)
 
-    clasc_end_time = time.time()
+        robot_path = get_robot_path(
+            best_path, best_path_length, robot_number, trans_graph, product_graph)
 
-    print(f'computation time: {clasc_end_time-clasc_start_time} seconds.')
-    logging.info(
-        f'computation time: {clasc_end_time-clasc_start_time} seconds.')
+        clasc_end_time = time.time()
 
-    for i, single_robot_path in enumerate(robot_path):
-        print(f'Robot{i}: {single_robot_path[0]} + {single_robot_path[1]}')
-        logging.info(f'Robot{i}: {single_robot_path}')
-    print(f'best path weight: {best_path_length["whole_path"]}')
-    print(f'pre weight: {best_path_length["pre_path"]}')
-    print(f'suf weight: {best_path_length["suf_path"]}')
-    logging.info(f'best path weight: {best_path_length["whole_path"]}')
-    logging.info(f'pre weight: {best_path_length["pre_path"]}')
-    logging.info(f'suf weight: {best_path_length["suf_path"]}')
+        print(f'computation time: {clasc_end_time-clasc_start_time} seconds.')
+        logging.info(
+            f'computation time: {clasc_end_time-clasc_start_time} seconds.')
 
-    # trans_dot_graph = nx_to_graphviz_trans(trans_graph_list[0])
-    # trans_dot_graph = nx_to_graphviz_trans(trans_graph)
-    # product_dot_graph = nx_to_graphviz_product(product_graph)
-    # trans_dot_graph.show('clasc_trans_graph')
-    # buchi_dot_graph.show('clasc_buchi_graph')
-    # product_dot_graph.show('clasc_product_graph')
+        for i, single_robot_path in enumerate(robot_path):
+            print(f'Robot{i}: {single_robot_path[0]} + {single_robot_path[1]}')
+            logging.info(f'Robot{i}: {single_robot_path}')
+        print(f'best path weight: {best_path_length["whole_path"]}')
+        print(f'pre weight: {best_path_length["pre_path"]}')
+        print(f'suf weight: {best_path_length["suf_path"]}')
+        logging.info(f'best path weight: {best_path_length["whole_path"]}')
+        logging.info(f'pre weight: {best_path_length["pre_path"]}')
+        logging.info(f'suf weight: {best_path_length["suf_path"]}')
+
+        # trans_dot_graph = nx_to_graphviz_trans(trans_graph_list[0])
+        # trans_dot_graph = nx_to_graphviz_trans(trans_graph)
+        # product_dot_graph = nx_to_graphviz_product(product_graph)
+        # trans_dot_graph.show('clasc_trans_graph')
+        # buchi_dot_graph.show('clasc_buchi_graph')
+        # product_dot_graph.show('clasc_product_graph')

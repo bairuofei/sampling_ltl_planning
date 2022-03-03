@@ -44,14 +44,14 @@ def nx_to_graphviz_tree(search_tree):
     search_dot_tree.title("sampling search tree")
     for node in list(search_tree.nodes):
         if search_tree.nodes[node]['buchi_name'].find('accept') != -1:
-            search_dot_tree.node(str(node), str(
-                search_tree.nodes[node]['ts_label']), True)
+            search_dot_tree.node(
+                str(node), search_tree.nodes[node]['name'], True)
         else:
-            search_dot_tree.node(str(node), str(
-                search_tree.nodes[node]['ts_label']), False)
+            search_dot_tree.node(
+                str(node), search_tree.nodes[node]['name'], False)
         for child_node in search_tree.nodes[node]['children']:
             search_dot_tree.edge(str(node), str(child_node), str(
-                search_tree[node][child_node]['label']))
+                search_tree[node][child_node]['weight']))
     return search_dot_tree
 
 

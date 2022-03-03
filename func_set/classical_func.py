@@ -13,6 +13,7 @@ def product_automaton(trans_graph, buchi_graph):
     trans_node_set = trans_graph.nodes()
     buchi_node_set = buchi_graph.nodes()
     product_add_node_index = 0
+    print_count = 0
     for trans_node in trans_node_set:
         for buchi_node in buchi_node_set:
             # ts_name: type str
@@ -23,9 +24,11 @@ def product_automaton(trans_graph, buchi_graph):
                                    init=False,
                                    accept=False,
                                    parent=[])
-            print(
-                f'PA: add node {product_add_node_index}: {trans_node},{buchi_node}')
-
+            if print_count % 100 == 0:
+                print(
+                    f'PA: add node {product_add_node_index}: {trans_node},{buchi_node}')
+                print_count = 0
+            print_count += 1
             if buchi_node.find('init') != -1:  # 起始节点
                 init_node_list.append(product_add_node_index)
                 product_graph.nodes[product_add_node_index]['init'] = True
@@ -54,9 +57,11 @@ def product_automaton(trans_graph, buchi_graph):
                                            [product_graph.nodes[j]
                                                ['ts_name']]['weight'],
                                            label=buchi_label)
-
-                    print(
-                        f'PA: add edge {i}->{j}. product state number: {product_state_num}')
+                    if print_count % 500 == 0:
+                        print_count = 0
+                        print(
+                            f'PA: add edge {i}->{j}. product state number: {product_state_num}')
+                    print_count += 1
                     # modify parent node list
                     product_graph.nodes[j]['parent'].append(i)
 #                print("buchi label: "+buchi_label)

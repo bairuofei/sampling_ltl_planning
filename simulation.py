@@ -12,11 +12,12 @@ import matplotlib.animation as animation
 
 
 class Quadcoptor:
-    def __init__(self, init_pos=[0, 0, 0], robot_task=[], task_wait=[], controller_para=[2, 15], trace_color='b', name=''):
+    def __init__(self, init_pos=[0, 0, 0], robot_task=[], task_wait=[], controller_para=[2, 15], body_color='k', trace_color='b', name='', text_name=''):
         self.x = init_pos[0]
         self.y = init_pos[1]
         self.theta = init_pos[2]      # radian
         self.radius = 2
+        self.body_color = body_color
         self.trace_color = trace_color
         self.robot_task = robot_task
         self.robot_task_index = 1
@@ -28,6 +29,7 @@ class Quadcoptor:
         self.target_y = self.y
 
         self.name = name
+        self.text_name = text_name
 
         Path = mpath.Path
         self.drone_outline = [
@@ -42,7 +44,7 @@ class Quadcoptor:
             (Path.LINETO, [-2.5, -0.3]),
             (Path.LINETO, [-1, 0.7]),
             (Path.CLOSEPOLY, [0, 0])]
-        self.model_scale = 2
+        self.model_scale = 2.5
 
         self.hover_lin_vel = 20
         self.hover_ang_vel = 5
@@ -88,30 +90,9 @@ class Quadcoptor:
         drone_path_patch = mpatches.PathPatch(path)
         drone_patches = []
         drone_patches.append(drone_path_patch)
-        # motor_x_offset = self.radius*math.cos((self.theta-math.pi/4))
-        # motor_y_offset = self.radius*math.sin((self.theta-math.pi/4))
-        # self.center_of_motor = [[self.x+motor_x_offset, self.y+motor_y_offset],
-        #                         [self.x-motor_x_offset, self.y-motor_y_offset],
-        #                         [self.x-motor_y_offset, self.y+motor_x_offset],
-        #                         [self.x+motor_y_offset, self.y-motor_x_offset]]
-        # for i in range(4):
-        #     drone_circle = mpatches.Circle(
-        #         self.center_of_motor[i], radius=0.4*self.radius)
-        #     drone_patches.append(drone_circle)
-        # motor_collection = PatchCollection(
-        #     drone_patches, match_original=False, facecolor='w', edgecolors=['r', 'k', 'r', 'k'], linewidth=2, alpha=1)
         motor_collection = PatchCollection(
-            drone_patches, match_original=False, facecolor='k', alpha=0.8)
+            drone_patches, match_original=False, facecolor=self.body_color, alpha=0.8)
         return motor_collection
-
-    # def modify_arm_collection(self):
-    #     arm_line_position = [[self.center_of_motor[0],
-    #                           self.center_of_motor[1]],
-    #                          [self.center_of_motor[2],
-    #                           self.center_of_motor[3]]]
-    #     arm_collection = LineCollection(arm_line_position, linewidth=1., color='k',
-    #                                     alpha=1)
-    #     return arm_collection
 
     def modify_trace(self, ax):
         trace_line_x = [self.last_x, self.x]
@@ -125,16 +106,19 @@ class Quadcoptor:
         # ax.add_collection(self.modify_arm_collection())
 
     def modify_robot_label(self, ax):
-        ax.text(x=self.x, y=self.y+2*self.radius, s=self.name, fontsize=6)
+        ax.text(x=self.x, y=self.y+2*self.radius, s=self.text_name, fontsize=6)
 
     def modify_robot_state(self, is_task_complete):
         if not is_task_complete[self.name][self.robot_task_index-1]:
             is_task_complete[self.name][self.robot_task_index-1] = True
 
     def check_wait_set(self, is_task_complete):
-        for wait_robot in self.task_wait[self.robot_task_index-1]:
-            if not is_task_complete[wait_robot][self.robot_task_index-1]:
-                return False
+        try:
+            for wait_robot in self.task_wait[self.robot_task_index-1]:
+                if not is_task_complete[wait_robot][self.robot_task_index-1]:
+                    return False
+        except IndexError:
+            print('haha')
         return True
 
     def set_theta(self, raw_theta):
@@ -146,7 +130,7 @@ class Quadcoptor:
 
 
 class Controller():
-    def __init__(self, kp_d=1, kp_theta=1, ki_d=0.6, dist_tolerance=0.1, theta_tolerance=math.pi/18):
+    def __init__(self, kp_d=1, kp_theta=1, ki_d=0.6, dist_tolerance=3, theta_tolerance=math.pi/18):
         self.kp_d = kp_d
         self.kp_theta = kp_theta
         self.ki_d = ki_d
@@ -203,6 +187,49 @@ class Environment():
         self.y_range = range[1]
         self.region_list = region_list
 
+        Path = mpath.Path
+        self.rader_path = [(Path.MOVETO, [-0.1, 0]),
+                           (Path.CURVE4, [-0.5, -0.5]),
+                           (Path.CURVE4, [-2, 0]),
+                           (Path.CURVE4, [-2.5, 0.8]),
+                           (Path.LINETO, [1.5, 3]),
+                           (Path.CURVE4, [1.5, 2]),
+                           (Path.CURVE4, [1, 0.5]),
+                           (Path.CURVE4, [0.1, 0]),
+                           (Path.LINETO, [1, -1]),
+                           (Path.LINETO, [-1, -1]),
+                           (Path.CLOSEPOLY, [0.1, 0])]
+        self.command_path = [(Path.MOVETO, [0, 1]),
+                             (Path.LINETO, [1.5, 0]),
+                             (Path.LINETO, [1.5, -1]),
+                             (Path.LINETO, [-1.5, -1]),
+                             (Path.LINETO, [-1.5, 0]),
+                             (Path.CLOSEPOLY, [0, 1])]
+        self.missile_path = [(Path.MOVETO, [1, 0]),
+                             (Path.LINETO, [-2, 1.5]),
+                             (Path.CURVE4, [-2, 1.6]),
+                             (Path.CURVE4, [-1.85, 1.75]),
+                             (Path.CURVE4, [-1.75, 1.75]),
+                             (Path.LINETO, [2, 0]),
+                             (Path.LINETO, [1.75, -0.25]),
+                             (Path.LINETO, [1.75, -0.75]),
+                             (Path.LINETO, [1.5, -0.75]),
+                             (Path.CURVE4, [1.5, -1.25]),
+                             (Path.CURVE4, [0.75, -1.25]),
+                             (Path.CURVE4, [0.75, -0.75]),
+
+                             (Path.LINETO, [-0.5, -0.75]),
+                             (Path.CURVE4, [-0.5, -1.25]),
+                             (Path.CURVE4, [-1.25, -1.25]),
+                             (Path.CURVE4, [-1.25, -0.75]),
+
+                             (Path.LINETO, [-1.5, -0.75]),
+                             (Path.LINETO, [-1.5, 0]),
+                             (Path.LINETO, [-1.25, 0.5]),
+                             (Path.LINETO, [-0.75, 0.5]),
+                             (Path.LINETO, [-0.75, 0]),
+                             (Path.CLOSEPOLY, [1, 0])]
+
     def get_region_collection(self, ax):
         region_patches = []
         for region in region_list:  # return a dict
@@ -215,13 +242,31 @@ class Environment():
                       region['region_center'][1]-region['region_para'][1]/2]
                 one_region_patch = mpatches.Rectangle(
                     xy=xy, width=region['region_para'][0], height=region['region_para'][1], facecolor=region['region_color'])
+            elif region['region_type'] == 3:
+                codes, verts = zip(*self.rader_path)
+                path = mpath.Path(np.array(verts)*6, codes)
+                path.vertices += np.array(region['region_center'])
+                one_region_patch = mpatches.PathPatch(
+                    path, facecolor=region['region_color'])
+            elif region['region_type'] == 4:
+                codes, verts = zip(*self.command_path)
+                path = mpath.Path(np.array(verts)*8, codes)
+                path.vertices += np.array(region['region_center'])
+                one_region_patch = mpatches.PathPatch(
+                    path, facecolor=region['region_color'])
+            elif region['region_type'] == 5:
+                codes, verts = zip(*self.missile_path)
+                path = mpath.Path(np.array(verts)*6.5, codes)
+                path.vertices += np.array(region['region_center'])
+                one_region_patch = mpatches.PathPatch(
+                    path, facecolor=region['region_color'])
 
-            ax.text(x=region['region_center'][0]+10, y=region['region_center']
-                    [1], s='$region: $'+region['region_name'], fontsize=6)
+            ax.text(x=region['region_center'][0]-8, y=region['region_center']
+                    [1]-15, s=region['region'], fontsize=6)
             region_patches.append(one_region_patch)
 
         region_collection = PatchCollection(
-            region_patches, match_original=True, edgecolors='none', alpha=0.1)
+            region_patches, match_original=True, edgecolors='none', alpha=0.5)
         return region_collection
 
     def modify_region_collection(self, ax):
@@ -240,6 +285,7 @@ def init():
 
 
 def animate(i):
+    print(i)
     if i > 80:
         del ax.collections[1:]
         if len(ax.texts) > len(region_list):
@@ -249,7 +295,7 @@ def animate(i):
             robot.modify_collection(ax)
             robot.modify_trace(ax)
             robot.modify_robot_label(ax)
-        if len(ax.lines) > 600:
+        if len(ax.lines) > 1200:
             del ax.lines[0:10]
     return ax.collections+ax.lines+ax.texts
 
@@ -259,25 +305,33 @@ if __name__ == '__main__':
 
     # region_type：1：circle, para: [radius];
     #              2: rectangle, para: [width,height]
-    region_list = [{'region_name': 'p1', 'region_type': 1,
-                    'region_center': [50, 50], 'region_para': [10], 'region_color': 'b'},
-                   {'region_name': 'p2', 'region_type': 2,
-                    'region_center': [5, 5], 'region_para': [10, 10], 'region_color': 'g'},
-                   {'region_name': 'p3', 'region_type': 2,
-                    'region_center': [95, 5], 'region_para': [10, 10], 'region_color': 'm'},
-                   {'region_name': 'p4', 'region_type': 2,
-                    'region_center': [5, 95], 'region_para': [10, 10], 'region_color': 'y'},
-                   {'region_name': 'p5', 'region_type': 2,
-                    'region_center': [95, 95], 'region_para': [10, 10], 'region_color': 'c'}]
+    region_list = [{'region_name': 'u1', 'region_type': 1, 'region': 'Data Upload',
+                    'region_center': [15, 130], 'region_para': [10], 'region_color': 'c'},
+                   {'region_name': 's1', 'region_type': 2, 'region': 'Airport',
+                    'region_center': [15, 70], 'region_para': [15, 15], 'region_color': 'lightblue'},
+                   {'region_name': 'z1', 'region_type': 5, 'region': 'Enemy Fire 1',
+                    'region_center': [75, 140], 'region_para': [15, 15], 'region_color': 'r'},
+                   {'region_name': 'z2', 'region_type': 5, 'region': 'Enemy Fire 2',
+                    'region_center': [75, 70], 'region_para': [15, 15], 'region_color': 'r'},
+                   {'region_name': 'l1', 'region_type': 3, 'region': 'Enemy Radar1',
+                    'region_center': [135, 170], 'region_para': [15], 'region_color': 'navy'},
+                   {'region_name': 'l2', 'region_type': 3, 'region': 'Enemy Radar2',
+                    'region_center': [115, 100], 'region_para': [15], 'region_color': 'navy'},
+                   {'region_name': 'l3', 'region_type': 3, 'region': 'Enemy Radar3',
+                    'region_center': [135, 30], 'region_para': [15], 'region_color': 'navy'},
+                   {'region_name': 'c1', 'region_type': 4, 'region': 'Enemy Command',
+                    'region_center': [190, 100], 'region_para': [20, 20], 'region_color': 'darkgreen'}]
 
-    region_index = {'p1': 0, 'p2': 1, 'p3': 2, 'p4': 3, 'p5': 4}
+    region_index = {'u1': 0, 's1': 1, 'z1': 2,
+                    'z2': 3, 'l1': 4, 'l2': 5, 'l3': 6, 'c1': 7}
 
-    battle_environment = Environment(region_list)
+    battle_environment = Environment(region_list, range=[(0, 200), (0, 200)])
 
-    task_set = {'robot1': ['p1', 'p2', 'p5', 'p4', 'p5', 'p3', 'p5', 'p4'],
-                'robot2': ['p1', 'p4', 'p5', 'p1'],
-                'robot3': ['p1', 'p5', 'p1', 'p4', 'p3', 'p1'],
-                'robot4': ['p1', 'p2', 'p3', 'p4', 'p3']}
+    task_set = {'robot1': ['s1', 'l1', 'l2', 'l3', 'c1', 'l1', 'u1'],
+                'robot2': ['s1', 's1', 's1', 's1', 's1', 's1', 's1', 'l1'],
+                'robot3': ['s1', 's1', 's1', 's1', 's1', 's1', 's1', 'l2'],
+                'robot4': ['s1', 's1', 's1', 's1', 's1', 's1', 's1', 'l3'],
+                'robot5': ['s1', 's1', 's1', 's1', 's1', 's1', 's1', 's1', 'z1', 'z2', 'l1', 'l2', 'l3', 'c1', 'l2', 'z1', 'u1', 's1']}
 
     is_task_complete = {}
     for robot_name in task_set.keys():
@@ -300,29 +354,36 @@ if __name__ == '__main__':
             wait_list.remove(robot_name)
             task_wait_set[robot_name].append(wait_list)
 
-    robot1 = Quadcoptor(init_pos=region_list[region_index['p1']]['region_center']+[0],
+    robot1 = Quadcoptor(init_pos=region_list[region_index['s1']]['region_center']+[0],
                         robot_task=task_set['robot1'], task_wait=task_wait_set['robot1'],
-                        trace_color='g', name='robot1')
-    robot2 = Quadcoptor(init_pos=region_list[region_index['p1']]['region_center']+[0],
+                        body_color='g', trace_color='g', name='robot1', text_name='R-drone1')
+    robot2 = Quadcoptor(init_pos=region_list[region_index['s1']]['region_center']+[0],
                         robot_task=task_set['robot2'], task_wait=task_wait_set['robot2'],
-                        trace_color='m', name='robot2')
-    robot3 = Quadcoptor(init_pos=region_list[region_index['p1']]['region_center']+[0],
+                        body_color='m', trace_color='m', name='robot2', text_name='E-drone1')
+    robot3 = Quadcoptor(init_pos=region_list[region_index['s1']]['region_center']+[0],
                         robot_task=task_set['robot3'], task_wait=task_wait_set['robot3'],
-                        trace_color='k', name='robot3')
-    robot4 = Quadcoptor(init_pos=region_list[region_index['p1']]['region_center']+[0],
+                        body_color='m', trace_color='m', name='robot3', text_name='E-drone2')
+    robot4 = Quadcoptor(init_pos=region_list[region_index['s1']]['region_center']+[0],
                         robot_task=task_set['robot4'], task_wait=task_wait_set['robot4'],
-                        trace_color='b', name='robot4')
+                        body_color='m', trace_color='m', name='robot4', text_name='E-drone3')
+    robot5 = Quadcoptor(init_pos=region_list[region_index['s1']]['region_center']+[0],
+                        robot_task=task_set['robot5'], task_wait=task_wait_set['robot5'],
+                        body_color='k', trace_color='k', name='robot5', text_name='Fighter1')
+    # robot4 = Quadcoptor(init_pos=region_list[region_index['p1']]['region_center']+[0],
+    #                     robot_task=task_set['robot4'], task_wait=task_wait_set['robot4'],
+    #                     body_color='b', trace_color='b', name='robot4')
 
-    robot_set = [robot1, robot2, robot3, robot4]
+    robot_set = [robot1, robot2, robot3, robot4, robot5]
 
     fig, ax = plt.subplots()
     ax.set_xlim(battle_environment.x_range)
     ax.set_ylim(battle_environment.y_range)
     ax.axis('equal')
+    ax.axis('off')
 
     # save_count代表视频存储的frame数  save_count=1400
     ani = animation.FuncAnimation(
-        fig, animate, init_func=init, interval=80, blit=True, save_count=1400)
+        fig, animate, init_func=init, interval=80, blit=True)
     # ani.save('single_pendulum_nodecay.gif', writer='imagemagick')  # , fps=100
-    ani.save('robot_navigation.mp4', fps=60, extra_args=['-vcodec', 'libx264'])
+    # ani.save('robot_navigation.mp4', fps=45, extra_args=['-vcodec', 'libx264'])
     plt.show()

@@ -4,7 +4,7 @@ import networkx as nx
 
 
 def compute_trans_graph(robot_xml_file):
-    with open(robot_xml_file, 'r') as f:
+    with open("./robot_ts/"+robot_xml_file, 'r') as f:
         config = json.loads(f.read())
 
     trans_graph = nx.DiGraph()
