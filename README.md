@@ -157,7 +157,7 @@
     "robot_name":"r-robot",
     "transgraph_node": [{"name":"s1","label":["e_s1"]},
                         {"name":"u1","label":["e_u1"]},
-                        {"name":"c1","label":["e_c1"，"e_c"]}],
+                        {"name":"c1","label":["e_c1", "e_c"]}],
     "transgraph_edge": [{"current":"s1","successor":"u1","weight":3},
                         {"current":"u1","successor":"c1","weight":3},
                         {"current":"c1","successor":"s1","weight":3}]
