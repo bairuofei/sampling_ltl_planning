@@ -2,8 +2,8 @@
 
 This repo implements the Linear Temporal Logic(LTL)-based multi-robot task planning. 
 It includes two different methods for solving the LTL-based multi-robot task planning problem:
-1. Graph search-based method (high complexity) 
-2. Sampling-based methods (more efficient )
+1. Graph search-based method (inefficient) 
+2. Sampling-based method (more efficient)
 
 
 You can find more related details in our paper:
@@ -67,31 +67,30 @@ You can also add the path to the global environment `PATH` variable:
 ├── classical_planning.log      # Log file for graph-based search method
 ├── samp_ltl_planning.py        # Main function for sampling-based method
 ├── samp_planning.log           # Log file for sampling-based search method
-├── compare_two.py              # 经典与采样LTL规划集成主程序
-├── compare.log                 # 调试日志及求解结果
+├── compare_two.py              # Main function includes both tradition and sampling-based methods
+├── compare.log                 # Log and results
 ├── simulation.py               # Example code for visualize the results
-├── robot_navigation.mp4        # 仿真程序存储得到的mp4视频
-├── dependencies                # 存储ltl2ba工具的未编译源码
+├── dependencies                # Our archived ltl2ba package source code
 │   └── ltl2ba-1.2 .tar.gz
 ├── func_set
 │   ├── __init__.py
-│   ├── classical_func.py       # 经典方法用到的一些子函数
-│   ├── general_func.py         # 经典方法和采样方法公用的一些函数
-│   ├── gltl2ba.py              # ltl2ba转化功能相关的函数
-│   ├── sampling_func.py        # 采样方法用到的一些子函数
-│   ├── show_graph.py           # networkx图转化为dot图显示的一些函数
-│   └── trans_sys.py            # 构造transition system的函数
-├── robot_ts                    # 用户指定任务要求及无人机加权切换系统
+│   ├── classical_func.py       # Functions used in the traditional method
+│   ├── general_func.py         # Commonly used functions by both methods
+│   ├── gltl2ba.py              # ltl2ba
+│   ├── sampling_func.py        # Functions used in the sampling-based method
+│   ├── show_graph.py           # Visualization, from networkx to dot
+│   └── trans_sys.py            # Construct transition system
+├── robot_ts                    # User-defined task specification and robot transition system
 │   ├── caseA.txt
 │   ├── caseG.txt
 │   ├── e-robot1.txt
 │   ├── f-robot1.txt
 │   └── r-robot1.txt
-└── README.md                   # 使用说明
+└── README.md                   
 
 ```
 
-# How to define your own task specification
+# Specify your task requirements
 
 ## Graph search-based LTL planning
 
@@ -107,20 +106,20 @@ You can also add the path to the global environment `PATH` variable:
 3. 运行文件`samp_ltl_planning.py`；
 4. 运行结果记录在`samp_planning.log`文件中。
 
-## 基于图搜索与采样的LTL规划算法对比
+## Comparison of the two methods
 
 1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
 2. 在文件`compare_two.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
 3. 运行文件`compare_two.py`；
 4. 运行结果记录在`compare.log`文件中。
 
-# 其他说明
+# Appendices
 
-## LTL表达式语法
+## Syntax of LTL language
 
-> 摘自[LTL2BA: fast translation from LTL formulae to Büchi automata](http://www.lsv.fr/~gastin/ltl2ba/index.php)
+> Copyed from [LTL2BA: fast translation from LTL formulae to Büchi automata](http://www.lsv.fr/~gastin/ltl2ba/index.php)
 
-> 本项目中的LTL表达式采用Spin语法。
+> We follow the `Spin` convention of LTL language in this repo.
 
 一个LTL表达式由命题变量，布尔运算符，时序运算符和括号组成。在不同命题之间需要用空格隔开。
 
@@ -178,36 +177,26 @@ You can also add the path to the global environment `PATH` variable:
 }
 ```
 
-## 绘图功能
+## Büchi automaton visualization
 
-1. 对经典LTL规划方法而言，目前提供了对product transition system, buchi automaton和product autumaton三种类型图形的绘制功能，基于graphviz软件包。
+1. For traditional graph search-based LTL planning method, we provide the visualization of product transition system, buchi automaton and product autumaton, based on `graphviz` package.
 
-> **注意：**　当预估product transition system规模过大时，不建议开启绘图功能。因为绘图所用的时间可能远大于程序规划时间。
+> **NOTE:**　If the size of the product transition system is too large，the graph rendering may be much slower than solely solving the problem, in which case you should not use the visualization function.
 
-2. 对采样LTL规划方法而言，目前提供了对每个机器人的transition system，buchi automaton和采样搜索树sampling search tree三种类型图形的绘制功能，基于graphviz软件包。
-
-## 仿真界面展示
-
-仿真界面展示程序为一个单独的程序模块。由于仿真界面需要设置无人机实际战场环境中各区域的位置与形状，在实际求解多无人机任务规划问题时相对独立，因此没有与上述求解程序连接，以避免过多的参数设置。
-
-仿真程序修改步骤：  
-1. 在`simulation.py`文件中修改`region_list`，对作战区域的名称、位置及种类进行定义；
-2. 在`simulation.py`文件中修改`task_set`，包含任务规划得到的无人机任务序列；
-3. 在`simulation.py`文件中定义每个无人机的轨迹颜色，初始位置等参数；
-4. 运行`simulation.py`文件，展示仿真界面。
-
-现有程序中的仿真界面如下图所示：
+2. For sampling-based LTL planning method, we support the visualization of the robot's transition system，büchi automaton and sampling search tree, also based on `graphviz` package.
 
 
 
-## Buchi自动机优化选项
 
-将LTL表达式转化为一个Buchi automaton，会有很多种可能的自动机化简方法。本项目所使用的**ltl2ba**工具包中，提供了部分选项用于修改自动机的化简方式.
+## Parameters for Büchi automaton generation
+
+There are many parameters you can specify to simplify the Büchi automaton constructed from the LTL specification.
+In **ltl2ba** package, the existing parameters are shown below:
 
 ```bash
-# 在终端输入以下指令
+# Type following in the terminal
 ~$ ltl2ba -h
-# 终端显示以下配置选项。默认为"-c" "-f".可以在gltl2ba.py文件中修改.
+# By default, we set the indicators "-c" and "-f" in gltl2ba.py
 usage: ltl2ba [-flag] -f 'formula'
                    or -F file
  -f 'formula' translate LTL into never claim
@@ -222,8 +211,8 @@ usage: ltl2ba [-flag] -f 'formula'
 ```
 
 
-# 参考资料
+# Reference
 
-1. 经典LTL规划方法参考论文: [*Optimal path planning for surveillance with temporal-logic constraints.*](https://pdfs.semanticscholar.org/1fbb/cec5ffaf45af9317c5bddf8f5cf6a365d14f.pdf) Smith,S.L.,etc. (2011).  The International Journal of Robotics Research, 30(14), 1695–1708.
-2. 基于采样LTL规划方法参考论文： [*Sampling-Based Optimal Control Synthesis for Multi-Robot Systems under Global Temporal Tasks.*](https://arxiv.org/pdf/1706.04216.pdf) Kantaros, Yiannis & Zavlanos, Michael. (2017). IEEE Transactions on Automatic Control. PP. 10.1109/TAC.2018.2853558.
-3. `gltl2ba.py`中,将ltl2ba功能包的命令行输出结果通过管道读取到程序中的函数，参考自Github项目[gltl2ba](https://github.com/PatrickTrentin88/gltl2ba).
+1. Traditional graph search-based method: [*Optimal path planning for surveillance with temporal-logic constraints.*](https://pdfs.semanticscholar.org/1fbb/cec5ffaf45af9317c5bddf8f5cf6a365d14f.pdf) Smith,S.L.,etc. (2011).  The International Journal of Robotics Research, 30(14), 1695–1708.
+2. Sampling-based method： [*Sampling-Based Optimal Control Synthesis for Multi-Robot Systems under Global Temporal Tasks.*](https://arxiv.org/pdf/1706.04216.pdf) Kantaros, Yiannis & Zavlanos, Michael. (2017). IEEE Transactions on Automatic Control. PP. 10.1109/TAC.2018.2853558.
+3. We read the terminal output of the `ltl2ba` package to `gltl2ba.py` by following the repo [gltl2ba](https://github.com/PatrickTrentin88/gltl2ba).
