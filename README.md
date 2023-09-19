@@ -5,6 +5,19 @@
 1. 经典的基于图搜索的线性时序任务规划算法。即将每个机器人的环境切换系统(transition sytem)融合为联合环境切换系统(product transition system),与LTL生成的buchi automaton相乘，构建完整的乘积自动机(product automaton)。在乘积自动机上运用图搜索算法(Dijkstra)，搜索得到满足LTL任务要求的机器人状态序列。
 2. 基于采样的线性时序任务规划方法。即不再完整构建出联合环境切换系统，而是进行增量式的采样，来搜索乘积自动机的状态空间。
 
+You can find more details in our related work:
+```
+@INPROCEEDINGS{9636287,
+  author={Bai, Ruofei and Zheng, Ronghao and Liu, Meiqin and Zhang, Senlin},
+  booktitle={2021 IEEE/RSJ International Conference on Intelligent Robots and Systems (IROS)}, 
+  title={Multi-Robot Task Planning under Individual and Collaborative Temporal Logic Specifications}, 
+  year={2021},
+  volume={},
+  number={},
+  pages={6382-6389},
+  doi={10.1109/IROS51168.2021.9636287}}
+```
+
 # 安装步骤-系统为Ubuntu16.04
 
 1.为python3安装**graphviz**模块
