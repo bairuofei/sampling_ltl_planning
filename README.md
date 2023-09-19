@@ -19,9 +19,9 @@ You can find more related details in our paper:
   doi={10.1109/IROS51168.2021.9636287}}
 ```
 
-# 安装步骤-系统为Ubuntu16.04
+# Installation (tested on Ubuntu16.04)
 
-1.为python3安装**graphviz**模块
+1.Install **graphviz** package (Python 3)
 
 > [Graphviz - Graph Visualization Software](https://www.graphviz.org/)
 
@@ -29,47 +29,47 @@ You can find more related details in our paper:
 ~$ pip install graphviz
 ```
 
-> 若使用“`pip3 install graphviz`”，提示需要安装pip3工具
+> If you use “`pip3 install graphviz`”，you may need to install `pip3` first. 
 
-2.下载**ltl2ba**软件包ltl2ba-1.2 .tar.gz并安装。
+2.Download **ltl2ba** package `ltl2ba-1.2 .tar.gz` and install.
 
 > [LTL2BA: fast translation from LTL formulae to Büchi automata](http://www.lsv.fr/~gastin/ltl2ba/index.php)
-> ltl2ba-1.2 .tar.gz软件压缩包已经预先下载到工程目录`dependencies`文件夹下
+
+> You can find `ltl2ba-1.2 .tar.gz` that we use under the `dependencies` folder.
 
 ```bash
-~$ cd 包含ltl2ba-1.2 .tar.gz的目录下
- $ tar -zxvf ltl2ba-1.2 .tar.gz [-C 目标路径]
+~$ cd to the folder containing ltl2ba-1.2 .tar.gz
+ $ tar -zxvf ltl2ba-1.2 .tar.gz [-C target_directory]
  $ cd ltl2ba-1.2
  $ make
  $ export PATH=$PATH:$(pwd)
 ```
 
-上述方法添加的路径仅在当前shell下有效。为方便起见，我们需要将该路径添加到当前用户的环境变量中。
-
+You can also add the path to the global environment `PATH` variable:
 ```bash
  $ pwd
  $ gedit ~/.bashrc
-# 在打开的txt文件中，将当前的路径添加到PATH变量中，保存后关闭文件
-# 添加格式为： export PATH=$PATH:当前绝对路径
+# Add current path to the file, save and exit.
+# Example： export PATH=$PATH:current_path
 
-# 运行下一句，则该配置在当前终端窗口立即生效。也可以不执行这一句，新开一个终端窗口，配置信息也会更新
+# Source to make the configuration take effect in current terminal
  $ source ~/.bashrc
 
-# 可通过以下命令查看配置是否生效
+# Check whether the path is correctly set 
  $ echo $PYTHONPATH
 ```
 
-# 软件框架
+# Functions of each file
 
 ```bash
 .
-├── clasc_ltl_planning.py       # 经典LTL规划主程序
-├── classical_planning.log      # 经典LTL规划调试日志及求解结果
-├── samp_ltl_planning.py        # 采样LTL规划主程序
-├── samp_planning.log           # 采样LTL规划调试日志及求解结果
+├── clasc_ltl_planning.py       # Main function for tradition graph-based search method
+├── classical_planning.log      # Log file for graph-based search method
+├── samp_ltl_planning.py        # Main function for sampling-based method
+├── samp_planning.log           # Log file for sampling-based search method
 ├── compare_two.py              # 经典与采样LTL规划集成主程序
 ├── compare.log                 # 调试日志及求解结果
-├── simulation.py               # 多无人机任务协同仿真程序
+├── simulation.py               # Example code for visualize the results
 ├── robot_navigation.mp4        # 仿真程序存储得到的mp4视频
 ├── dependencies                # 存储ltl2ba工具的未编译源码
 │   └── ltl2ba-1.2 .tar.gz
@@ -91,16 +91,16 @@ You can find more related details in our paper:
 
 ```
 
-# 使用步骤
+# How to define your own task specification
 
-## 基于图搜索的LTL规划
+## Graph search-based LTL planning
 
 1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
 2. 在文件`clasc_ltl_planning.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
 3. 运行文件`clasc_ltl_planning.py`；
 4. 运行结果记录在`classical_planning.log`文件中。
 
-## 基于采样的LTL规划
+## Sampling-based LTL planning
 
 1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
 2. 在文件`samp_ltl_planning.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
