@@ -6,7 +6,7 @@ It includes two different methods for solving the LTL-based multi-robot task pla
 2. Sampling-based method (more efficient)
 
 
-You can find more related details in our paper:
+You can find the extended work based on this repo in the following paper:
 ```
 @INPROCEEDINGS{9636287,
   author={Bai, Ruofei and Zheng, Ronghao and Liu, Meiqin and Zhang, Senlin},
@@ -94,24 +94,24 @@ You can also add the path to the global environment `PATH` variable:
 
 ## Graph search-based LTL planning
 
-1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
-2. 在文件`clasc_ltl_planning.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
-3. 运行文件`clasc_ltl_planning.py`；
-4. 运行结果记录在`classical_planning.log`文件中。
+1. In subdirectory `robot_ts`, specify global task specification and each robot's transition system in `.txt` files
+2. Modify the path to the `.txt` files in `clasc_ltl_planning.py`
+3. Run `clasc_ltl_planning.py`；
+4. You can find the obtained solution in `classical_planning.log`
 
 ## Sampling-based LTL planning
 
-1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
-2. 在文件`samp_ltl_planning.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
-3. 运行文件`samp_ltl_planning.py`；
-4. 运行结果记录在`samp_planning.log`文件中。
+1. In subdirectory `robot_ts`, specify global task specification and each robot's transition system in `.txt` files
+2. Modify the path to the `.txt` files in `samp_ltl_planning.py`
+3. Run `samp_ltl_planning.py`；
+4. You can find the obtained solution in `samp_planning.log`
 
 ## Comparison of the two methods
 
-1. 在子文件夹`robot_ts`中，以txt文件格式给出全局任务要求，以及每个无人机的加权切换系统；
-2. 在文件`compare_two.py`中，将包含全局任务要求的txt文件路径添加到程序读取列表中；
-3. 运行文件`compare_two.py`；
-4. 运行结果记录在`compare.log`文件中。
+1. In subdirectory `robot_ts`, specify global task specification and each robot's transition system in `.txt` files
+2. Modify the path to the `.txt` files in `compare_two.py`
+3. Run `compare_two.py`；
+4. You can find the obtained solution in `compare.log`
 
 # Appendices
 
@@ -121,17 +121,17 @@ You can also add the path to the global environment `PATH` variable:
 
 > We follow the `Spin` convention of LTL language in this repo.
 
-一个LTL表达式由命题变量，布尔运算符，时序运算符和括号组成。在不同命题之间需要用空格隔开。
+A LTL formula includes atom propositions, boolean operators, temporal operators and parentheses. 
 
-命题变量包含下面几种类型:
+The atom proposition should be one of the following types:
 
 ```text
         true, false
         any lowercase string
 ```
 
-布尔运算符包括下面几种类型：
-> 注意：建议使用NOT代替！
+The boolean operators include the following:
+> NOTE: Use `NOT` rather than `!` for negation
 
 ```text
         !   (negation)
@@ -141,7 +141,7 @@ You can also add the path to the global environment `PATH` variable:
         ||  (or)
 ```
 
-时序运算符包括下面几种类型：
+The temporal operators include the following:
 
 ```text
         G   (always) (Spin syntax : [])
@@ -150,30 +150,35 @@ You can also add the path to the global environment `PATH` variable:
         R   (realease) (Spin syntax : V)
         X   (next)
 ```
-## 全局任务要求txt文件书写格式
+## Format of task specification
 
-在任务描述部分，需要通过txt文件对全局任务要求和每个无人机的加权切换系统进行描述。以下举两个示例进行说明：
+We need two types of files to define the task requirements and the robots' transition systems, respectively.
+
+1. The task specification `.txt` file (Defined once)
 ```py
 # task_config.txt:
 {
-    "robots_config_file":["robot1_ts.txt"],   # 任务涉及的无人机切换系统的txt描述文件，多个文件用逗号隔开
-    "path_weight":[1,200],                    # 前缀及后缀路径的执行次数
-    "robots_init_pos":["s1"],                 # 无人机的初始位置，多个无人机用逗号隔开
-    "ltl_task":"(<>r_l1) && (<>r_l2) && (<>r_l3)",  # 全局任务要求
-    "itera_pre_num":150,                      # 采样规划中前缀路径采样迭代次数
-    "itera_suf_num":80                        # 采样规划中后缀路径采样迭代次数
+    "robots_config_file":["robot1_ts.txt"],   # Include all robot_ts.txt, separated by comma
+    "path_weight":[1,200],                    # Number of repetitions to execute the prefix and suffix paths
+    "robots_init_pos":["c1"],                 # Initial positions of the robots in their transition system, separated by comma
+    "ltl_task":"(<>c1) && (<>c2) && (<>c3)",  # Global LTL task specification
+    "itera_pre_num":150,                      # Sampling thresholds in prefix path finding
+    "itera_suf_num":80                        # Sampling thresholds in suffix path finding
 }
 ```
+
+2. The robot transition system `.txt` file. (Defined for each robot respectively)
+
 ```py
 # robot1_ts.txt:
 {
-    "robot_name":"r-robot",
-    "transgraph_node": [{"name":"s1","label":["e_s1"]},
-                        {"name":"u1","label":["e_u1"]},
-                        {"name":"c1","label":["e_c1", "e_c"]}],
-    "transgraph_edge": [{"current":"s1","successor":"u1","weight":3},
-                        {"current":"u1","successor":"c1","weight":3},
-                        {"current":"c1","successor":"s1","weight":3}]
+    "robot_name":"robot-1",
+    "transgraph_node": [{"name":"c1","label":["c1"]},
+                        {"name":"c2","label":["c2"]},
+                        {"name":"c3","label":["c3", "c4"]}],
+    "transgraph_edge": [{"current":"c1","successor":"c2","weight":3},
+                        {"current":"c2","successor":"c3","weight":3},
+                        {"current":"c3","successor":"c1","weight":3}]
 }
 ```
 
